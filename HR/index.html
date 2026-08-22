@@ -22,7 +22,7 @@
         </div>
         <nav class="nav-icons">
           <button class="nav-item active" data-view="dashboard" title="Dashboard"><i class="fa-solid fa-house"></i></button>
-          <button class="nav-item" data-view="employees" title="Employees"><i class="fa-solid fa-users"></i></button>
+          <button class="nav-item" data-view="employees" title="Employees & Payroll"><i class="fa-solid fa-users"></i></button>
           <button class="nav-item" data-view="attendance" title="Attendance Sheet"><i class="fa-regular fa-calendar-days"></i></button>
           <button class="nav-item" data-view="documents" title="Documents"><i class="fa-regular fa-folder-open"></i></button>
         </nav>
@@ -40,30 +40,26 @@
       
       <!-- TOP NAVBAR -->
       <header class="topbar">
-        <!-- Search with Dropdown Results -->
         <div class="search-container">
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="globalSearch" placeholder="Search employees, tickets, activities..." autocomplete="off" />
+            <input type="text" id="globalSearch" placeholder="Search employees, payroll, tickets..." autocomplete="off" />
             <button id="clearSearchBtn" class="clear-search-btn">&times;</button>
           </div>
           <div class="search-dropdown" id="searchDropdown"></div>
         </div>
 
         <div class="topbar-right">
-          <!-- Dynamic Real-Time Date -->
           <div class="date-badge" id="dateBadge" title="Live System Date">
             <i class="fa-regular fa-calendar"></i>
             <span id="currentDate">Loading date...</span>
           </div>
 
-          <!-- Messages Popover Button -->
           <div class="popover-wrapper">
             <button class="icon-action-btn" id="msgToggleBtn" title="Inbox Messages">
               <i class="fa-regular fa-message"></i>
               <span class="badge-dot" id="msgDot"></span>
             </button>
-            <!-- Messages Dropdown Panel -->
             <div class="dropdown-panel" id="msgPanel">
               <div class="panel-header">
                 <h4>Messages (<span id="msgCount">3</span>)</h4>
@@ -73,13 +69,11 @@
             </div>
           </div>
 
-          <!-- Notifications Popover Button -->
           <div class="popover-wrapper">
             <button class="icon-action-btn" id="notifToggleBtn" title="Notifications">
               <i class="fa-regular fa-bell"></i>
               <span class="badge-dot" id="notifDot"></span>
             </button>
-            <!-- Notifications Dropdown Panel -->
             <div class="dropdown-panel" id="notifPanel">
               <div class="panel-header">
                 <h4>Notifications (<span id="notifCount">3</span>)</h4>
@@ -89,7 +83,6 @@
             </div>
           </div>
 
-          <!-- Top Profile Avatar Button -->
           <div class="top-profile" id="topProfileBtn" title="Click to view/edit profile">
             <div class="avatar-sm" id="topAvatarInitial">R</div>
           </div>
@@ -107,9 +100,7 @@
           </div>
 
           <div class="dashboard-grid">
-            <!-- Left Col -->
             <div class="grid-col col-left">
-              <!-- Profile Card -->
               <div class="card profile-card">
                 <div class="profile-header">
                   <div class="avatar-large" id="profileAvatarLarge">
@@ -120,7 +111,7 @@
                       <h3 id="employeeName">Rahul Sharma</h3>
                       <button class="btn-edit" id="btnEditProfile"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
                     </div>
-                    <span class="role-badge" id="employeeRole">HR Manager</span>
+                    <span class="role-badge" id="employeeRole">HR Manager (Admin)</span>
                   </div>
                 </div>
                 
@@ -140,7 +131,6 @@
                 </div>
               </div>
 
-              <!-- Attendance Card -->
               <div class="card attendance-card">
                 <div class="card-head">
                   <h3>Monthly Attendance (10-Day Quick View)</h3>
@@ -154,7 +144,6 @@
               </div>
             </div>
 
-            <!-- Center Col (Quick Access) -->
             <div class="grid-col col-center">
               <div class="card quick-access-card">
                 <div class="card-head">
@@ -164,6 +153,10 @@
                   <button class="quick-btn" id="btnQuickProfile">
                     <div class="btn-icon"><i class="fa-regular fa-id-card"></i></div>
                     <span>Profile (Edit Info)</span>
+                  </button>
+                  <button class="quick-btn" data-route="employees">
+                    <div class="btn-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <span>Payroll & Directory</span>
                   </button>
                   <button class="quick-btn" data-route="attendance">
                     <div class="btn-icon"><i class="fa-regular fa-clock"></i></div>
@@ -181,7 +174,6 @@
               </div>
             </div>
 
-            <!-- Right Col -->
             <div class="grid-col col-right">
               <div class="card activity-card">
                 <div class="card-head">
@@ -193,37 +185,65 @@
 
               <div class="card stat-summary-card">
                 <div class="stat-item">
-                  <span class="stat-number">95%</span>
-                  <span class="stat-label">Avg Attendance</span>
+                  <span class="stat-number" id="totalMonthlyDisbursed">₹3.18L</span>
+                  <span class="stat-label">Total Monthly Payroll</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-number" id="pendingStatCount">02</span>
-                  <span class="stat-label">Pending Leaves</span>
+                  <span class="stat-number" id="payrollAccuracyRate">100%</span>
+                  <span class="stat-label">Payroll Accuracy</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- 2. EMPLOYEES VIEW -->
+        <!-- 2. EMPLOYEES & ADMIN PAYROLL CONTROL VIEW -->
         <section id="view-employees" class="app-view">
           <div class="view-header-bar">
             <div>
-              <h2>Employee Directory</h2>
-              <p>Manage all registered team members and access statuses.</p>
+              <h2>Employee Directory & Payroll Control</h2>
+              <p>Click on any employee row to open their full attendance & salary profile.</p>
             </div>
-            <button class="btn-primary" id="btnOpenAddEmp">+ Add New Employee</button>
+            <div class="header-action-group">
+              <button class="btn-secondary" id="btnAuditPayroll">
+                <i class="fa-solid fa-shield-halved"></i> Verify Payroll Accuracy
+              </button>
+              <button class="btn-primary" id="btnOpenAddEmp">+ Add New Employee</button>
+            </div>
           </div>
+
+          <!-- Summary Strip for Payroll Control -->
+          <div class="payroll-stats-strip">
+            <div class="payroll-stat-card">
+              <span class="stat-title">Total Active Payroll</span>
+              <h3 id="statTotalPayroll">₹3,18,000 / mo</h3>
+            </div>
+            <div class="payroll-stat-card">
+              <span class="stat-title">Total Deductions (PF/Tax)</span>
+              <h3 id="statTotalDeductions">₹42,000 / mo</h3>
+            </div>
+            <div class="payroll-stat-card">
+              <span class="stat-title">Net Disbursable</span>
+              <h3 id="statTotalNet">₹2,76,000 / mo</h3>
+            </div>
+            <div class="payroll-stat-card">
+              <span class="stat-title">Audit Accuracy Status</span>
+              <h3 style="color:var(--success-color);" id="auditStatusBadge"><i class="fa-solid fa-circle-check"></i> 100% Verified</h3>
+            </div>
+          </div>
+
           <div class="card table-card">
-            <table class="data-table">
+            <table class="data-table interactive-table">
               <thead>
                 <tr>
-                  <th>Employee</th>
-                  <th>Role</th>
-                  <th>Department</th>
+                  <th>Employee Info</th>
+                  <th>Department & Role</th>
+                  <th>Base Pay (₹)</th>
+                  <th>Allowances (₹)</th>
+                  <th>Deductions (₹)</th>
+                  <th>Net Salary (₹)</th>
                   <th>Status</th>
-                  <th>Join Date</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="employeesTableBody"></tbody>
@@ -321,10 +341,6 @@
                   <summary>What is the payroll cutoff date?</summary>
                   <p>Attendance is locked on the 26th of each month for payroll processing.</p>
                 </details>
-                <details class="faq-item">
-                  <summary>How can I update my official contact information?</summary>
-                  <p>Use the Edit Profile option on your dashboard profile card.</p>
-                </details>
               </div>
             </div>
           </div>
@@ -363,9 +379,9 @@
     </div>
   </div>
 
-  <!-- GENERIC DYNAMIC MODAL (For Profile Edit, Add Emp, Leave, Tickets) -->
+  <!-- GENERIC DYNAMIC MODAL (For Profile, Add Emp, Salary Edit, Leave, Tickets) -->
   <div class="modal-overlay" id="genericModal">
-    <div class="modal-box">
+    <div class="modal-box" id="genericModalContainer">
       <div class="modal-head">
         <h3 id="modalTitle">Modal Form</h3>
         <button class="modal-close" id="btnModalClose">&times;</button>

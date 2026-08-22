@@ -4,7 +4,7 @@
 const AppState = {
   profile: {
     name: "Rahul Sharma",
-    role: "HR Manager",
+    role: "HR Manager (Admin)",
     email: "rahul.hr@company.com",
     empId: "EMP ID: HR-2049",
     phone: "+91 98765 43210"
@@ -24,23 +24,92 @@ const AppState = {
   messages: [
     { id: 1, sender: "Priya Verma", text: "Please review my leave application for next Monday.", time: "10m ago", read: false },
     { id: 2, sender: "IT Support", text: "System maintenance scheduled for 11:00 PM tonight.", time: "2h ago", read: false },
-    { id: 3, sender: "Aman Gupta", text: "Submitted the revised QA test report.", time: "Yesterday", read: false }
+    { id: 3, sender: "Aman Gupta", text: "Salary slip for September received accurately.", time: "Yesterday", read: false }
   ],
   notifications: [
-    { id: 1, title: "New Leave Application", desc: "Priya Verma requested Casual Leave.", time: "15m ago", read: false },
-    { id: 2, title: "Attendance Reminder", desc: "Attendance logs for week 3 are locked.", time: "3h ago", read: false },
-    { id: 3, title: "Payroll Ready", desc: "September payroll summary is ready for sign-off.", time: "1d ago", read: false }
+    { id: 1, title: "Payroll Audit Complete", desc: "All salary deductions matched with tax registers.", time: "10m ago", read: false },
+    { id: 2, title: "New Leave Application", desc: "Priya Verma requested Casual Leave.", time: "1h ago", read: false },
+    { id: 3, title: "Attendance Locked", desc: "Attendance logs verified for payroll processing.", time: "1d ago", read: false }
   ],
   activities: [
-    { type: 'meeting', title: 'HR Strategy review meeting', time: '10:30 AM Today', icon: 'fa-solid fa-users-rectangle' },
+    { type: 'approved', title: 'Admin audited and verified 100% Payroll accuracy', time: '10:30 AM Today', icon: 'fa-solid fa-shield-halved' },
     { type: 'leave', title: 'Leave applied by Priya Verma', time: 'Yesterday', icon: 'fa-regular fa-clock' },
-    { type: 'approved', title: 'Payroll processed successfully', time: '2 days ago', icon: 'fa-solid fa-circle-check' }
+    { type: 'approved', title: 'Salary structure updated for Aman Gupta', time: '2 days ago', icon: 'fa-solid fa-file-invoice-dollar' }
   ],
+  // Complete Employee Directory with individual Attendance & Salary Details
   employees: [
-    { id: 1, name: "Rahul Sharma", email: "rahul@company.com", role: "HR Manager", dept: "Human Resources", status: "Active", joinDate: "12 Jan 2022" },
-    { id: 2, name: "Priya Verma", email: "priya.v@company.com", role: "UI/UX Designer", dept: "Design", status: "Active", joinDate: "05 Mar 2023" },
-    { id: 3, name: "Aman Gupta", email: "aman.g@company.com", role: "Backend Developer", dept: "Engineering", status: "Active", joinDate: "18 Jun 2021" },
-    { id: 4, name: "Sneha Patel", email: "sneha.p@company.com", role: "QA Engineer", dept: "QA Team", status: "Inactive", joinDate: "10 Oct 2023" }
+    { 
+      id: 1, 
+      name: "Rahul Sharma", 
+      email: "rahul@company.com", 
+      phone: "+91 98765 43210",
+      empCode: "HR-2049",
+      role: "HR Manager", 
+      dept: "Human Resources", 
+      status: "Active", 
+      joinDate: "12 Jan 2022",
+      attendance: [
+        { day: '01', status: 'present' }, { day: '02', status: 'present' }, { day: '03', status: 'present' },
+        { day: '04', status: 'present' }, { day: '05', status: 'present' }, { day: '06', status: 'present' },
+        { day: '07', status: 'present' }, { day: '08', status: 'present' }, { day: '09', status: 'present' },
+        { day: '10', status: 'present' }
+      ],
+      salary: { basePay: 75000, allowances: 15000, deductions: 10000 }
+    },
+    { 
+      id: 2, 
+      name: "Priya Verma", 
+      email: "priya.v@company.com", 
+      phone: "+91 98111 22334",
+      empCode: "UI-1082",
+      role: "UI/UX Designer", 
+      dept: "Design", 
+      status: "Active", 
+      joinDate: "05 Mar 2023",
+      attendance: [
+        { day: '01', status: 'present' }, { day: '02', status: 'absent' }, { day: '03', status: 'present' },
+        { day: '04', status: 'present' }, { day: '05', status: 'present' }, { day: '06', status: 'half-day' },
+        { day: '07', status: 'present' }, { day: '08', status: 'present' }, { day: '09', status: 'present' },
+        { day: '10', status: 'present' }
+      ],
+      salary: { basePay: 55000, allowances: 10000, deductions: 7500 }
+    },
+    { 
+      id: 3, 
+      name: "Aman Gupta", 
+      email: "aman.g@company.com", 
+      phone: "+91 97222 33445",
+      empCode: "DEV-3011",
+      role: "Backend Developer", 
+      dept: "Engineering", 
+      status: "Active", 
+      joinDate: "18 Jun 2021",
+      attendance: [
+        { day: '01', status: 'present' }, { day: '02', status: 'present' }, { day: '03', status: 'absent' },
+        { day: '04', status: 'present' }, { day: '05', status: 'present' }, { day: '06', status: 'present' },
+        { day: '07', status: 'present' }, { day: '08', status: 'half-day' }, { day: '09', status: 'present' },
+        { day: '10', status: 'present' }
+      ],
+      salary: { basePay: 85000, allowances: 20000, deductions: 14000 }
+    },
+    { 
+      id: 4, 
+      name: "Sneha Patel", 
+      email: "sneha.p@company.com", 
+      phone: "+91 96333 44556",
+      empCode: "QA-4090",
+      role: "QA Engineer", 
+      dept: "QA Team", 
+      status: "Active", 
+      joinDate: "10 Oct 2023",
+      attendance: [
+        { day: '01', status: 'present' }, { day: '02', status: 'present' }, { day: '03', status: 'present' },
+        { day: '04', status: 'half-day' }, { day: '05', status: 'present' }, { day: '06', status: 'present' },
+        { day: '07', status: 'present' }, { day: '08', status: 'present' }, { day: '09', status: 'absent' },
+        { day: '10', status: 'present' }
+      ],
+      salary: { basePay: 45000, allowances: 8000, deductions: 5500 }
+    }
   ],
   attendanceSheet: [
     { id: 1, name: "Rahul Sharma", dept: "Human Resources", inTime: "09:00 AM", outTime: "06:00 PM", status: "Present" },
@@ -59,8 +128,8 @@ const AppState = {
     { id: 2, name: "Aman Gupta", type: "Sick Leave", from: "24 Oct 2026", to: "24 Oct 2026", reason: "Viral Fever", status: "Approved" }
   ],
   tickets: [
-    { id: "T-101", subject: "Salary calculation discrepancy", status: "In Progress", priority: "High" },
-    { id: "T-102", subject: "New workstation monitor request", status: "Resolved", priority: "Medium" }
+    { id: "T-101", subject: "Salary calculation discrepancy check", status: "Resolved", priority: "High" },
+    { id: "T-102", subject: "New workstation monitor request", status: "In Progress", priority: "Medium" }
   ]
 };
 
@@ -73,34 +142,241 @@ document.addEventListener("DOMContentLoaded", () => {
   bindAppEvents();
 });
 
-// Real-Time Daily Live Date & Time
 function startLiveClockAndDate() {
   const update = () => {
     const now = new Date();
     const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-GB', options);
-    
     const dateElem = document.getElementById('currentDate');
-    if (dateElem) {
-      dateElem.textContent = dateStr;
-    }
+    if (dateElem) dateElem.textContent = now.toLocaleDateString('en-GB', options);
   };
   update();
-  setInterval(update, 60000); // Live sync
+  setInterval(update, 60000);
 }
 
-// Master Render
 function renderAllModules() {
   renderProfileCard();
   renderQuickAttendance();
   renderActivities();
-  renderEmployeesTable();
+  renderEmployeesPayrollTable();
   renderAttendanceSheet();
   renderDocuments();
   renderLeavesTable();
   renderTickets();
   renderMessages();
   renderNotifications();
+}
+
+// Net Pay helper
+function calculateNetPay(base, allowances, deductions) {
+  return (Number(base) + Number(allowances)) - Number(deductions);
+}
+
+// ==========================================
+// EMPLOYEE DIRECTORY & DEDICATED PROFILE MODAL
+// ==========================================
+function renderEmployeesPayrollTable(list = AppState.employees) {
+  const tbody = document.getElementById("employeesTableBody");
+  let totalGross = 0;
+  let totalDeductions = 0;
+  let totalNet = 0;
+
+  tbody.innerHTML = list.map(emp => {
+    const base = emp.salary ? emp.salary.basePay : 50000;
+    const allow = emp.salary ? emp.salary.allowances : 10000;
+    const deduct = emp.salary ? emp.salary.deductions : 5000;
+    const net = calculateNetPay(base, allow, deduct);
+
+    totalGross += (base + allow);
+    totalDeductions += deduct;
+    totalNet += net;
+
+    return `
+      <tr class="emp-row-clickable" data-emp-id="${emp.id}">
+        <td>
+          <strong>${emp.name}</strong><br>
+          <small style="color:var(--text-light)">${emp.email}</small>
+        </td>
+        <td>
+          <strong>${emp.dept}</strong><br>
+          <small style="color:var(--text-muted)">${emp.role}</small>
+        </td>
+        <td>₹${base.toLocaleString('en-IN')}</td>
+        <td style="color:var(--success-color);">+₹${allow.toLocaleString('en-IN')}</td>
+        <td style="color:var(--danger-color);">-₹${deduct.toLocaleString('en-IN')}</td>
+        <td><strong>₹${net.toLocaleString('en-IN')}</strong></td>
+        <td><span class="status-pill ${emp.status.toLowerCase()}">${emp.status}</span></td>
+        <td>
+          <button class="btn-table-action" data-action="view-emp" data-id="${emp.id}" title="View Full Employee Profile & Update Salary">
+            <i class="fa-regular fa-eye" style="color:var(--primary-color)"></i> View Profile
+          </button>
+          <button class="btn-table-action" data-action="delete-emp" data-id="${emp.id}" title="Delete Record" style="margin-left:4px;">
+            <i class="fa-regular fa-trash-can" style="color:var(--danger-color)"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById("statTotalPayroll").textContent = `₹${totalGross.toLocaleString('en-IN')} / mo`;
+  document.getElementById("statTotalDeductions").textContent = `₹${totalDeductions.toLocaleString('en-IN')} / mo`;
+  document.getElementById("statTotalNet").textContent = `₹${totalNet.toLocaleString('en-IN')} / mo`;
+  document.getElementById("totalMonthlyDisbursed").textContent = `₹${(totalNet / 100000).toFixed(2)}L`;
+}
+
+// OPEN DEDICATED EMPLOYEE MODAL (Shows Attendance, Salary Breakdown, and Update Form)
+function openEmployeeDetailsModal(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  const base = emp.salary ? emp.salary.basePay : 50000;
+  const allow = emp.salary ? emp.salary.allowances : 10000;
+  const deduct = emp.salary ? emp.salary.deductions : 5000;
+  const net = calculateNetPay(base, allow, deduct);
+
+  // Generate Attendance HTML for this employee
+  const attData = emp.attendance || AppState.quickAttendance;
+  const attHtml = attData.map(item => {
+    let iconClass = item.status === 'present' ? 'fa-check' : (item.status === 'absent' ? 'fa-xmark' : 'fa-adjust');
+    return `
+      <div class="day-box">
+        <span class="day-number">${item.day}</span>
+        <div class="status-indicator ${item.status}">
+          <i class="fa-solid ${iconClass}"></i>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Attendance summary count
+  const presentDays = attData.filter(a => a.status === 'present').length;
+  const absentDays = attData.filter(a => a.status === 'absent').length;
+  const halfDays = attData.filter(a => a.status === 'half-day').length;
+
+  openGenericModal(`Employee Overview: ${emp.name}`, `
+    <div class="emp-profile-modal-grid">
+      
+      <!-- Top Header Card -->
+      <div class="emp-header-badge">
+        <div class="avatar-emp">${emp.name.charAt(0)}</div>
+        <div style="flex:1;">
+          <h3 style="font-size:18px;">${emp.name}</h3>
+          <p style="color:var(--text-muted); font-size:13px;">${emp.role} &bull; <strong>${emp.dept}</strong></p>
+        </div>
+        <span class="status-pill active">${emp.status}</span>
+      </div>
+
+      <!-- Quick Info Grid -->
+      <div class="emp-details-grid">
+        <div><span>EMAIL ADDRESS</span><strong>${emp.email}</strong></div>
+        <div><span>PHONE NUMBER</span><strong>${emp.phone || '+91 98765 00000'}</strong></div>
+        <div><span>EMPLOYEE CODE</span><strong>${emp.empCode || 'EMP-' + emp.id}</strong></div>
+        <div><span>JOINING DATE</span><strong>${emp.joinDate}</strong></div>
+      </div>
+
+      <!-- Attendance Breakdown Section -->
+      <div>
+        <div class="modal-section-title">
+          <i class="fa-regular fa-calendar-check" style="color:var(--primary-color);"></i> Monthly Attendance Record (Quick 10 Days)
+        </div>
+        <div class="days-tracker">${attHtml}</div>
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-muted); background:#f8fafc; padding:8px 12px; border-radius:6px;">
+          <span><strong>Present:</strong> ${presentDays} days</span>
+          <span><strong>Absent:</strong> ${absentDays} days</span>
+          <span><strong>Half Days:</strong> ${halfDays} days</span>
+        </div>
+      </div>
+
+      <!-- Salary Structure & Update Section -->
+      <div>
+        <div class="modal-section-title">
+          <i class="fa-solid fa-file-invoice-dollar" style="color:var(--primary-color);"></i> Salary Structure & Payroll Update
+        </div>
+
+        <div class="salary-edit-box">
+          <div class="salary-inputs-row">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Base Pay (₹)</label>
+              <input type="number" id="modalInpBase" value="${base}" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Allowances (₹)</label>
+              <input type="number" id="modalInpAllow" value="${allow}" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Deductions (₹)</label>
+              <input type="number" id="modalInpDeduct" value="${deduct}" />
+            </div>
+          </div>
+
+          <div class="salary-summary-pill" style="margin: 12px 0;">
+            <div>
+              <span style="font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Calculated Net Take-Home</span>
+              <h3 id="modalLiveNet" style="color:var(--primary-color);">₹${net.toLocaleString('en-IN')}</h3>
+            </div>
+            <button class="btn-primary" id="btnUpdateEmpSalary" style="padding:8px 16px;">
+              <i class="fa-solid fa-floppy-disk"></i> Update Salary
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `);
+
+  // Live calculation on modal inputs
+  const bInput = document.getElementById("modalInpBase");
+  const aInput = document.getElementById("modalInpAllow");
+  const dInput = document.getElementById("modalInpDeduct");
+  const liveNet = document.getElementById("modalLiveNet");
+
+  const recalcModalNet = () => {
+    const updatedNet = calculateNetPay(bInput.value || 0, aInput.value || 0, dInput.value || 0);
+    liveNet.textContent = `₹${updatedNet.toLocaleString('en-IN')}`;
+  };
+
+  bInput.addEventListener("input", recalcModalNet);
+  aInput.addEventListener("input", recalcModalNet);
+  dInput.addEventListener("input", recalcModalNet);
+
+  // Update Salary Action
+  document.getElementById("btnUpdateEmpSalary").addEventListener("click", () => {
+    emp.salary = {
+      basePay: Number(bInput.value) || 0,
+      allowances: Number(aInput.value) || 0,
+      deductions: Number(dInput.value) || 0
+    };
+
+    AppState.activities.unshift({
+      type: 'approved',
+      title: `Salary structure updated for ${emp.name}`,
+      time: 'Just now',
+      icon: 'fa-solid fa-file-invoice-dollar'
+    });
+
+    renderEmployeesPayrollTable();
+    renderActivities();
+    closeGenericModal();
+    showToast(`Salary details for ${emp.name} updated successfully!`);
+  });
+}
+
+// Payroll Audit
+function runPayrollAccuracyAudit() {
+  let isAllValid = true;
+  AppState.employees.forEach(emp => {
+    const s = emp.salary;
+    if (!s || (s.basePay + s.allowances - s.deductions) !== calculateNetPay(s.basePay, s.allowances, s.deductions)) {
+      isAllValid = false;
+    }
+  });
+
+  if (isAllValid) {
+    document.getElementById("auditStatusBadge").innerHTML = `<i class="fa-solid fa-circle-check"></i> 100% Verified`;
+    document.getElementById("payrollAccuracyRate").textContent = "100%";
+    showToast("Audit Complete: 100% Payroll accuracy verified!");
+  } else {
+    showToast("Discrepancy detected in payroll records!");
+  }
 }
 
 // ==========================================
@@ -112,9 +388,7 @@ function renderProfileCard() {
   document.getElementById("employeeEmail").textContent = AppState.profile.email;
   document.getElementById("employeeID").textContent = AppState.profile.empId;
   document.getElementById("employeePhone").textContent = AppState.profile.phone;
-
-  const initial = AppState.profile.name.charAt(0).toUpperCase();
-  document.getElementById("topAvatarInitial").textContent = initial;
+  document.getElementById("topAvatarInitial").textContent = AppState.profile.name.charAt(0).toUpperCase();
 }
 
 function openProfileEditModal() {
@@ -149,10 +423,7 @@ function openProfileEditModal() {
     const phone = document.getElementById("inpEditPhone").value.trim();
     const empId = document.getElementById("inpEditEmpId").value.trim();
 
-    if (!name || !email) {
-      showToast("Name and Email are required!");
-      return;
-    }
+    if (!name || !email) return showToast("Name and Email are required!");
 
     AppState.profile = { name, role, email, phone, empId };
     renderProfileCard();
@@ -221,7 +492,7 @@ function markSingleNotifRead(id) {
 }
 
 // ==========================================
-// GLOBAL SEARCH & AUTOCOMPLETE
+// SEARCH & AUTOCOMPLETE
 // ==========================================
 function setupGlobalSearch() {
   const searchInput = document.getElementById("globalSearch");
@@ -250,21 +521,18 @@ function performLiveSearch(term) {
   const dropdown = document.getElementById("searchDropdown");
   const results = [];
 
-  // Search Employees
   AppState.employees.forEach(emp => {
-    if (emp.name.toLowerCase().includes(term) || emp.dept.toLowerCase().includes(term)) {
-      results.push({ title: `${emp.name} (${emp.dept})`, cat: 'Employee', view: 'employees' });
+    if (emp.name.toLowerCase().includes(term) || emp.dept.toLowerCase().includes(term) || emp.role.toLowerCase().includes(term)) {
+      results.push({ title: `${emp.name} (${emp.dept})`, cat: 'Employee / Payroll', view: 'employees', empId: emp.id });
     }
   });
 
-  // Search Documents
   AppState.documents.forEach(doc => {
     if (doc.title.toLowerCase().includes(term)) {
       results.push({ title: doc.title, cat: 'Document', view: 'documents' });
     }
   });
 
-  // Search Tickets
   AppState.tickets.forEach(ticket => {
     if (ticket.subject.toLowerCase().includes(term)) {
       results.push({ title: ticket.subject, cat: 'Support Ticket', view: 'help' });
@@ -275,7 +543,7 @@ function performLiveSearch(term) {
     dropdown.innerHTML = `<div style="padding:14px; font-size:13px; color:var(--text-muted); text-align:center;">No matching results found</div>`;
   } else {
     dropdown.innerHTML = results.map(r => `
-      <div class="search-result-item" onclick="handleSearchResultClick('${r.view}')">
+      <div class="search-result-item" onclick="handleSearchResultClick('${r.view}', ${r.empId || null})">
         <span class="item-title">${r.title}</span>
         <span class="item-cat">${r.cat}</span>
       </div>
@@ -284,15 +552,18 @@ function performLiveSearch(term) {
   dropdown.style.display = "block";
 }
 
-function handleSearchResultClick(view) {
+function handleSearchResultClick(view, empId) {
   document.getElementById("searchDropdown").style.display = "none";
   document.getElementById("globalSearch").value = "";
   document.getElementById("clearSearchBtn").style.display = "none";
   switchView(view);
+  if (empId) {
+    setTimeout(() => openEmployeeDetailsModal(empId), 150);
+  }
 }
 
 // ==========================================
-// DASHBOARD & OTHER MODULE RENDERS
+// QUICK ATTENDANCE & ACTIVITIES
 // ==========================================
 function renderQuickAttendance() {
   const container = document.getElementById("attendanceGrid");
@@ -319,24 +590,6 @@ function renderActivities() {
         <span>${act.time}</span>
       </div>
     </div>
-  `).join('');
-}
-
-function renderEmployeesTable(list = AppState.employees) {
-  const tbody = document.getElementById("employeesTableBody");
-  tbody.innerHTML = list.map(emp => `
-    <tr>
-      <td><strong>${emp.name}</strong><br><small style="color:var(--text-light)">${emp.email}</small></td>
-      <td>${emp.role}</td>
-      <td>${emp.dept}</td>
-      <td><span class="status-pill ${emp.status.toLowerCase()}">${emp.status}</span></td>
-      <td>${emp.joinDate}</td>
-      <td>
-        <button class="btn-table-action" data-action="delete-emp" data-id="${emp.id}" style="color:var(--danger-color)">
-          <i class="fa-regular fa-trash-can"></i>
-        </button>
-      </td>
-    </tr>
   `).join('');
 }
 
@@ -392,9 +645,6 @@ function renderLeavesTable() {
       </td>
     </tr>
   `).join('');
-
-  const pending = AppState.leaves.filter(l => l.status === 'Pending').length;
-  document.getElementById("pendingStatCount").textContent = String(pending).padStart(2, '0');
 }
 
 function renderTickets() {
@@ -411,7 +661,7 @@ function renderTickets() {
 }
 
 // ==========================================
-// VIEW SWITCHER (ROUTER)
+// ROUTER & MODAL CONTROLLERS
 // ==========================================
 function switchView(viewName) {
   document.querySelectorAll(".app-view").forEach(v => v.classList.remove("active"));
@@ -424,9 +674,6 @@ function switchView(viewName) {
   if (targetNavBtn) targetNavBtn.classList.add("active");
 }
 
-// ==========================================
-// MODAL & TOAST CONTROLLERS
-// ==========================================
 function openGenericModal(title, html) {
   document.getElementById("modalTitle").textContent = title;
   document.getElementById("modalBody").innerHTML = html;
@@ -447,12 +694,12 @@ function showToast(msg) {
 }
 
 // ==========================================
-// EVENT BINDINGS
+// BIND ALL APPLICATION EVENTS
 // ==========================================
 function bindAppEvents() {
   setupGlobalSearch();
 
-  // Navigation Links
+  // Navigation
   document.querySelectorAll(".nav-item[data-view]").forEach(btn => {
     btn.addEventListener("click", () => switchView(btn.getAttribute("data-view")));
   });
@@ -461,10 +708,13 @@ function bindAppEvents() {
     btn.addEventListener("click", () => switchView(btn.getAttribute("data-route")));
   });
 
-  // Profile Edit Triggers
+  // Profile Edit
   document.getElementById("btnEditProfile").addEventListener("click", openProfileEditModal);
   document.getElementById("btnQuickProfile").addEventListener("click", openProfileEditModal);
   document.getElementById("topProfileBtn").addEventListener("click", openProfileEditModal);
+
+  // Admin Payroll Audit
+  document.getElementById("btnAuditPayroll").addEventListener("click", runPayrollAccuracyAudit);
 
   // Messages Popover Toggle
   const msgBtn = document.getElementById("msgToggleBtn");
@@ -484,7 +734,6 @@ function bindAppEvents() {
     notifPanel.classList.toggle("open");
   });
 
-  // Close Popovers on Click Outside
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".popover-wrapper") && !e.target.closest(".search-container")) {
       msgPanel.classList.remove("open");
@@ -493,7 +742,6 @@ function bindAppEvents() {
     }
   });
 
-  // Mark all read
   document.getElementById("markMsgsRead").addEventListener("click", () => {
     AppState.messages.forEach(m => m.read = true);
     renderMessages();
@@ -506,24 +754,9 @@ function bindAppEvents() {
     showToast("All notifications marked as read");
   });
 
-  // Add Activity Click
-  document.getElementById("btnAddActivity").addEventListener("click", () => {
-    const title = prompt("Enter activity details:");
-    if (title && title.trim()) {
-      AppState.activities.unshift({
-        type: 'approved',
-        title: title.trim(),
-        time: 'Just now',
-        icon: 'fa-solid fa-bell'
-      });
-      renderActivities();
-      showToast("Activity logged!");
-    }
-  });
-
-  // Add Employee
+  // Add Employee with Salary Setup
   document.getElementById("btnOpenAddEmp").addEventListener("click", () => {
-    openGenericModal("Add New Employee", `
+    openGenericModal("Add New Employee (With Payroll Setup)", `
       <div class="form-group">
         <label>Employee Name</label>
         <input type="text" id="inpEmpName" placeholder="e.g. Vikas Sharma" />
@@ -533,6 +766,10 @@ function bindAppEvents() {
         <input type="email" id="inpEmpEmail" placeholder="vikas@company.com" />
       </div>
       <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" id="inpEmpPhone" placeholder="+91 98765 11223" />
+      </div>
+      <div class="form-group">
         <label>Department</label>
         <input type="text" id="inpEmpDept" placeholder="Engineering" />
       </div>
@@ -540,24 +777,49 @@ function bindAppEvents() {
         <label>Role</label>
         <input type="text" id="inpEmpRole" placeholder="Frontend Developer" />
       </div>
-      <button class="btn-primary" id="btnSaveEmp" style="width:100%">Save Employee</button>
+      <div class="form-group">
+        <label>Base Pay (₹)</label>
+        <input type="number" id="inpEmpBase" placeholder="60000" />
+      </div>
+      <button class="btn-primary" id="btnSaveEmp" style="width:100%">Register & Assign Payroll</button>
     `);
 
     document.getElementById("btnSaveEmp").addEventListener("click", () => {
       const name = document.getElementById("inpEmpName").value.trim();
       const email = document.getElementById("inpEmpEmail").value.trim();
+      const phone = document.getElementById("inpEmpPhone").value.trim() || "+91 98000 00000";
       const dept = document.getElementById("inpEmpDept").value.trim() || "General";
       const role = document.getElementById("inpEmpRole").value.trim() || "Associate";
+      const basePay = Number(document.getElementById("inpEmpBase").value) || 50000;
 
-      if (!name || !email) {
-        showToast("Please provide Name and Email");
-        return;
-      }
+      if (!name || !email) return showToast("Name and Email required!");
 
-      AppState.employees.push({ id: Date.now(), name, email, dept, role, status: "Active", joinDate: "Today" });
-      renderEmployeesTable();
+      AppState.employees.push({
+        id: Date.now(),
+        name,
+        email,
+        phone,
+        empCode: "EMP-" + Math.floor(1000 + Math.random() * 9000),
+        dept,
+        role,
+        status: "Active",
+        joinDate: "Today",
+        attendance: [
+          { day: '01', status: 'present' }, { day: '02', status: 'present' }, { day: '03', status: 'present' },
+          { day: '04', status: 'present' }, { day: '05', status: 'present' }, { day: '06', status: 'present' },
+          { day: '07', status: 'present' }, { day: '08', status: 'present' }, { day: '09', status: 'present' },
+          { day: '10', status: 'present' }
+        ],
+        salary: {
+          basePay: basePay,
+          allowances: Math.round(basePay * 0.15),
+          deductions: Math.round(basePay * 0.10)
+        }
+      });
+
+      renderEmployeesPayrollTable();
       closeGenericModal();
-      showToast("Employee added successfully!");
+      showToast(`Employee ${name} registered with payroll structure!`);
     });
   });
 
@@ -574,7 +836,7 @@ function bindAppEvents() {
 
   // Upload Doc
   document.getElementById("btnUploadDoc").addEventListener("click", () => {
-    const title = prompt("Enter Document Title (e.g. Quarter_Review.pdf):");
+    const title = prompt("Enter Document Title (e.g. October_Payroll_Summary.pdf):");
     if (title && title.trim()) {
       AppState.documents.push({ id: Date.now(), title: title.trim(), size: "1.2 MB", type: "PDF", date: "Just Now" });
       renderDocuments();
@@ -611,7 +873,7 @@ function bindAppEvents() {
     });
   });
 
-  // New Support Ticket
+  // Support Ticket
   document.getElementById("btnOpenTicketModal").addEventListener("click", () => {
     openGenericModal("Raise Support Ticket", `
       <div class="form-group">
@@ -665,17 +927,33 @@ function bindAppEvents() {
     `;
   });
 
-  // Global Click Delegations (Delete, Toggle Attendance, Leave actions, Downloads)
+  // Global Delegated Clicks (Row Click, View Profile, Delete, Toggle Attendance, Leaves)
   document.addEventListener("click", (e) => {
+    // Click on Table Row or View Profile Button
+    const viewBtn = e.target.closest('[data-action="view-emp"]');
+    const empRow = e.target.closest('.emp-row-clickable');
+
+    if (viewBtn) {
+      const id = parseInt(viewBtn.getAttribute("data-id"));
+      openEmployeeDetailsModal(id);
+      return;
+    } else if (empRow && !e.target.closest('button')) {
+      const id = parseInt(empRow.getAttribute("data-emp-id"));
+      openEmployeeDetailsModal(id);
+      return;
+    }
+
+    // Delete Employee
     const delBtn = e.target.closest('[data-action="delete-emp"]');
     if (delBtn) {
       const id = parseInt(delBtn.getAttribute("data-id"));
       AppState.employees = AppState.employees.filter(emp => emp.id !== id);
-      renderEmployeesTable();
-      showToast("Employee deleted!");
+      renderEmployeesPayrollTable();
+      showToast("Employee deleted from payroll dictionary!");
       return;
     }
 
+    // Toggle Attendance
     const attBtn = e.target.closest('[data-action="toggle-attendance"]');
     if (attBtn) {
       const id = parseInt(attBtn.getAttribute("data-id"));
@@ -689,11 +967,12 @@ function bindAppEvents() {
           record.status = "Present"; record.inTime = "09:00 AM"; record.outTime = "06:00 PM";
         }
         renderAttendanceSheet();
-        showToast(`Status updated to ${record.status}`);
+        showToast(`Attendance updated to ${record.status}`);
       }
       return;
     }
 
+    // Approve Leave
     const appLeave = e.target.closest('[data-action="approve-leave"]');
     if (appLeave) {
       const id = parseInt(appLeave.getAttribute("data-id"));
@@ -702,6 +981,7 @@ function bindAppEvents() {
       return;
     }
 
+    // Reject Leave
     const rejLeave = e.target.closest('[data-action="reject-leave"]');
     if (rejLeave) {
       const id = parseInt(rejLeave.getAttribute("data-id"));
@@ -710,6 +990,7 @@ function bindAppEvents() {
       return;
     }
 
+    // Download Doc
     const downloadBtn = e.target.closest('.btn-doc-download');
     if (downloadBtn) {
       showToast(`Downloading: ${downloadBtn.getAttribute("data-title")}`);
