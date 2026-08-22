@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard,
-  User,
+  Users,
   CalendarCheck,
   FileText,
   DollarSign,
@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Edit2,
   CheckCircle2,
+  XCircle,
   Info,
   AlertTriangle,
   HelpCircle,
@@ -20,745 +21,947 @@ import {
   X,
   Save,
   Camera,
-  Eye,
-  EyeOff,
-  Lock,
-  Download,
+  Search,
+  UserPlus,
+  Trash2,
+  Check,
   Briefcase,
-  Home,
   CreditCard,
-  FileCheck,
-  ShieldAlert
+  Building,
+  ShieldCheck,
+  Eye,
+  PlusCircle,
+  MessageSquareText,
+  SlidersHorizontal
 } from 'lucide-react';
 
-export default function DayflowDashboard() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [showEditPopup, setShowEditPopup] = useState(false);
+export default function DayflowAdminHRApp() {
+  const [currentTab, setCurrentTab] = useState('employees'); // 'employees' | 'leaves' | 'attendance' | 'payroll'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const fileInputRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDept, setSelectedDept] = useState('All');
 
-  // Security Account Password
-  const [currentAccountPassword, setCurrentAccountPassword] = useState('password123');
+  // Modals State
+  const [showEditEmpModal, setShowEditEmpModal] = useState(false);
+  const [showPayrollModal, setShowPayrollModal] = useState(false);
+  const [showLeaveRemarkModal, setShowLeaveRemarkModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedLeaveReq, setSelectedLeaveReq] = useState(null);
+  const [adminRemarkText, setAdminRemarkText] = useState('');
+  const [leaveActionType, setLeaveActionType] = useState('Approved');
 
-  // Complete Employee Profile State (3.3.1 & 3.3.2)
-  const [userProfile, setUserProfile] = useState({
-    // Personal Details
-    name: 'XXXXXXX XXXXX',
-    email: 'XXXXXXX@example.com',
-    phone: '+91 98765 43210',
-    dob: '15 Aug 2000',
-    gender: 'Male',
-    address: 'Plot 42, Tech Park Residency, Bhubaneswar, Odisha',
-    emergencyContact: '+91 91234 56789',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-
-    // Job Details
-    empId: 'EMP00123',
-    department: 'Engineering',
-    designation: 'Frontend Developer',
-    doj: '01 Jan 2024',
-    manager: 'Rohit Sharma',
-    employmentType: 'Full-time (Permanent)',
-    workLocation: 'Smart Office / Hybrid',
-
-    // Salary Structure
-    salary: {
-      ctc: '₹ 6,00,000 / annum',
-      basic: '₹ 25,000',
-      hra: '₹ 12,000',
-      specialAllowance: '₹ 8,000',
-      pfDeduction: '₹ 1,800',
-      professionalTax: '₹ 200',
-      netSalary: '₹ 45,000 / month'
+  // 1. Central Employees Database
+  const [employees, setEmployees] = useState([
+    {
+      id: 'EMP00123',
+      name: 'Surajeet Patra',
+      email: 'surajeet@example.com',
+      phone: '+91 98765 43210',
+      department: 'Engineering',
+      designation: 'Frontend Developer',
+      status: 'Active',
+      doj: '01 Jan 2024',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      checkIn: '09:15 AM',
+      checkOut: '-:-',
+      attendanceToday: 'Present',
+      salary: {
+        ctc: '₹6,00,000',
+        basic: 25000,
+        hra: 12000,
+        special: 8000,
+        pf: 1800,
+        pt: 200,
+        netPay: 43000
+      }
     },
-
-    // Documents
-    documents: [
-      { id: 1, name: 'National ID (Aadhaar / Passport)', type: 'PDF', date: '02 Jan 2024', status: 'Verified' },
-      { id: 2, name: 'PAN Card Copy', type: 'PDF', date: '02 Jan 2024', status: 'Verified' },
-      { id: 3, name: 'Appointment & Offer Letter', type: 'PDF', date: '01 Jan 2024', status: 'Verified' },
-      { id: 4, name: 'Degree & Educational Certificates', type: 'PDF', date: '03 Jan 2024', status: 'Verified' }
-    ]
-  });
-
-  // Limited Editable Fields for 3.3.2
-  const [editFormData, setEditFormData] = useState({
-    phone: userProfile.phone,
-    address: userProfile.address,
-    emergencyContact: userProfile.emergencyContact,
-    avatar: userProfile.avatar
-  });
-
-  const handleOpenPopup = () => {
-    setEditFormData({
-      phone: userProfile.phone,
-      address: userProfile.address,
-      emergencyContact: userProfile.emergencyContact,
-      avatar: userProfile.avatar
-    });
-    setShowEditPopup(true);
-    setIsMobileMenuOpen(false);
-  };
-
-  const handleClosePopup = () => {
-    setShowEditPopup(false);
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setEditFormData((prev) => ({ ...prev, avatar: imageUrl }));
+    {
+      id: 'EMP00124',
+      name: 'Ananya Sharma',
+      email: 'ananya@example.com',
+      phone: '+91 98111 22334',
+      department: 'Design',
+      designation: 'UI/UX Designer',
+      status: 'Active',
+      doj: '15 Feb 2024',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+      checkIn: '09:05 AM',
+      checkOut: '06:00 PM',
+      attendanceToday: 'Present',
+      salary: {
+        ctc: '₹5,50,000',
+        basic: 22000,
+        hra: 10000,
+        special: 7000,
+        pf: 1800,
+        pt: 200,
+        netPay: 37000
+      }
+    },
+    {
+      id: 'EMP00125',
+      name: 'Rohan Verma',
+      email: 'rohan@example.com',
+      phone: '+91 97222 33445',
+      department: 'Engineering',
+      designation: 'Backend Developer',
+      status: 'On Leave',
+      doj: '10 Nov 2023',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      checkIn: '-:-',
+      checkOut: '-:-',
+      attendanceToday: 'On Leave',
+      salary: {
+        ctc: '₹7,00,000',
+        basic: 30000,
+        hra: 14000,
+        special: 9000,
+        pf: 1800,
+        pt: 200,
+        netPay: 51000
+      }
+    },
+    {
+      id: 'EMP00126',
+      name: 'Pooja Nair',
+      email: 'pooja@example.com',
+      phone: '+91 96333 44556',
+      department: 'Human Resources',
+      designation: 'HR Executive',
+      status: 'Active',
+      doj: '05 Mar 2024',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+      checkIn: '09:30 AM',
+      checkOut: '-:-',
+      attendanceToday: 'Present',
+      salary: {
+        ctc: '₹4,80,000',
+        basic: 19000,
+        hra: 9000,
+        special: 6000,
+        pf: 1800,
+        pt: 200,
+        netPay: 32000
+      }
     }
-  };
+  ]);
 
-  const handleSaveProfile = (e) => {
+  // 2. Central Leave Database
+  const [leaveApplications, setLeaveApplications] = useState([
+    {
+      id: 1,
+      empId: 'EMP00123',
+      empName: 'Surajeet Patra',
+      type: 'Sick Leave',
+      dates: '25 Aug 2026 - 26 Aug 2026',
+      days: 2,
+      reason: 'Viral fever and doctor consultation',
+      appliedOn: '20 Aug 2026',
+      status: 'Pending',
+      adminRemark: ''
+    },
+    {
+      id: 2,
+      empId: 'EMP00125',
+      empName: 'Rohan Verma',
+      type: 'Paid Leave',
+      dates: '22 Aug 2026 - 23 Aug 2026',
+      days: 2,
+      reason: 'Attending family function out of station',
+      appliedOn: '18 Aug 2026',
+      status: 'Approved',
+      adminRemark: 'Approved as per leave balance'
+    },
+    {
+      id: 3,
+      empId: 'EMP00124',
+      empName: 'Ananya Sharma',
+      type: 'Unpaid Leave',
+      dates: '01 Sep 2026 - 02 Sep 2026',
+      days: 2,
+      reason: 'Personal urgent commitments',
+      appliedOn: '21 Aug 2026',
+      status: 'Pending',
+      adminRemark: ''
+    }
+  ]);
+
+  // Active switched employee for preview
+  const [activeEmployeeProfile, setActiveEmployeeProfile] = useState(employees[0]);
+
+  // Handle Full Admin Employee Edit
+  const handleSaveEmployeeEdit = (e) => {
     e.preventDefault();
-    setUserProfile((prev) => ({
-      ...prev,
-      phone: editFormData.phone,
-      address: editFormData.address,
-      emergencyContact: editFormData.emergencyContact,
-      avatar: editFormData.avatar
-    }));
-    setShowEditPopup(false);
-    alert('Profile updated successfully!');
-  };
-
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to log out?')) {
-      alert('Logged out successfully!');
-      setCurrentPage('dashboard');
-      setIsMobileMenuOpen(false);
+    setEmployees((prev) =>
+      prev.map((emp) => (emp.id === selectedEmployee.id ? selectedEmployee : emp))
+    );
+    if (activeEmployeeProfile.id === selectedEmployee.id) {
+      setActiveEmployeeProfile(selectedEmployee);
     }
+    setShowEditEmpModal(false);
+    alert('Employee profile updated across all records!');
   };
 
-  const handleNavigate = (page) => {
-    setCurrentPage(page);
-    setIsMobileMenuOpen(false);
+  // Handle Admin Payroll Structure Update
+  const handleSaveSalaryStructure = (e) => {
+    e.preventDefault();
+    const basic = Number(selectedEmployee.salary.basic) || 0;
+    const hra = Number(selectedEmployee.salary.hra) || 0;
+    const special = Number(selectedEmployee.salary.special) || 0;
+    const pf = Number(selectedEmployee.salary.pf) || 0;
+    const pt = Number(selectedEmployee.salary.pt) || 0;
+    const calculatedNet = basic + hra + special - (pf + pt);
+
+    const updatedEmp = {
+      ...selectedEmployee,
+      salary: {
+        ...selectedEmployee.salary,
+        basic,
+        hra,
+        special,
+        pf,
+        pt,
+        netPay: calculatedNet
+      }
+    };
+
+    setEmployees((prev) =>
+      prev.map((emp) => (emp.id === updatedEmp.id ? updatedEmp : emp))
+    );
+    setShowPayrollModal(false);
+    alert(`Salary Structure updated! New Net Take-Home: ₹${calculatedNet.toLocaleString()}`);
   };
+
+  // Open Leave Remark Modal
+  const initiateLeaveAction = (app, actionType) => {
+    setSelectedLeaveReq(app);
+    setLeaveActionType(actionType);
+    setAdminRemarkText(actionType === 'Approved' ? 'Approved by HR' : 'Rejected due to project deadlines');
+    setShowLeaveRemarkModal(true);
+  };
+
+  // Confirm Leave Action with Comments
+  const submitLeaveDecision = (e) => {
+    e.preventDefault();
+    setLeaveApplications((prev) =>
+      prev.map((app) =>
+        app.id === selectedLeaveReq.id
+          ? { ...app, status: leaveActionType, adminRemark: adminRemarkText }
+          : app
+      )
+    );
+    setShowLeaveRemarkModal(false);
+    alert(`Leave request has been marked as ${leaveActionType} with remarks.`);
+  };
+
+  // Filtered List
+  const filteredEmployees = employees.filter((emp) => {
+    const matchesSearch =
+      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDept = selectedDept === 'All' || emp.department === selectedDept;
+    return matchesSearch && matchesDept;
+  });
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-slate-800 font-sans relative">
-      {/* Mobile Drawer Overlay */}
+      {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           onClick={() => setIsMobileMenuOpen(false)}
           className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 lg:hidden"
         />
       )}
 
-      {/* Sidebar */}
-      <aside className={`w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 fixed h-full z-40 select-none transition-transform duration-300 ease-in-out ${
-        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      {/* Admin Sidebar */}
+      <aside
+        className={`w-64 bg-slate-900 text-white flex flex-col justify-between p-4 fixed h-full z-40 select-none transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
         <div>
-          {/* Logo */}
-          <div className="flex items-center justify-between px-3 py-4 mb-4">
-            <div 
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => handleNavigate('dashboard')}
-            >
-              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
-                <span className="text-xl">👥</span>
+          {/* Admin Header */}
+          <div className="flex items-center justify-between px-3 py-4 mb-4 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+                <Building className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="font-bold text-lg leading-tight text-slate-900 tracking-tight">Dayflow</h1>
-                <p className="text-[11px] font-semibold text-slate-400 tracking-wider">HRMS</p>
+                <h1 className="font-bold text-lg leading-tight tracking-tight text-white">Dayflow HR</h1>
+                <span className="text-[10px] bg-blue-500/20 text-blue-400 font-bold px-2 py-0.5 rounded-md border border-blue-500/30">
+                  ADMIN/HR CONSOLE
+                </span>
               </div>
             </div>
-
-            <button 
+            <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              className="lg:hidden p-1 text-slate-400 hover:text-white rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Active Section */}
-          <div 
-            onClick={() => handleNavigate('dashboard')}
-            className={`rounded-xl px-4 py-2.5 flex items-center gap-3 font-medium text-sm mb-6 cursor-pointer transition ${
-              currentPage === 'dashboard' 
-                ? 'bg-blue-50 text-blue-600 font-semibold' 
-                : 'text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            <span>Dashboard</span>
-          </div>
-
-          {/* Main Navigation */}
-          <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Main</p>
-          <nav className="space-y-1 mb-6">
-            <NavItem 
-              icon={<User className="w-4 h-4" />} 
-              label="Profile (3.3.1)" 
-              active={currentPage === 'profile'} 
-              onClick={() => handleNavigate('profile')} 
+          {/* Admin Tabs */}
+          <p className="text-[10px] font-bold tracking-wider text-slate-500 uppercase px-3 mb-2">Management</p>
+          <nav className="space-y-1.5">
+            <AdminNavItem
+              icon={<Users className="w-4 h-4" />}
+              label="Employee Directory"
+              badge={employees.length}
+              active={currentTab === 'employees'}
+              onClick={() => { setCurrentTab('employees'); setIsMobileMenuOpen(false); }}
             />
-            <NavItem 
-              icon={<CalendarCheck className="w-4 h-4" />} 
-              label="Attendance" 
-              active={currentPage === 'attendance'} 
-              onClick={() => handleNavigate('attendance')} 
+            <AdminNavItem
+              icon={<FileText className="w-4 h-4" />}
+              label="Leave Approvals"
+              badge={leaveApplications.filter((l) => l.status === 'Pending').length}
+              badgeColor="bg-amber-500"
+              active={currentTab === 'leaves'}
+              onClick={() => { setCurrentTab('leaves'); setIsMobileMenuOpen(false); }}
             />
-            <NavItem 
-              icon={<FileText className="w-4 h-4" />} 
-              label="Leave Requests" 
-              active={currentPage === 'leaves'} 
-              onClick={() => handleNavigate('leaves')} 
+            <AdminNavItem
+              icon={<CalendarCheck className="w-4 h-4" />}
+              label="Attendance (All)"
+              active={currentTab === 'attendance'}
+              onClick={() => { setCurrentTab('attendance'); setIsMobileMenuOpen(false); }}
             />
-            <NavItem 
-              icon={<DollarSign className="w-4 h-4" />} 
-              label="Payroll" 
-              active={currentPage === 'payroll'} 
-              onClick={() => handleNavigate('payroll')} 
-            />
-          </nav>
-
-          {/* Account Navigation */}
-          <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Account</p>
-          <nav className="space-y-1">
-            <NavItem 
-              icon={<KeyRound className="w-4 h-4" />} 
-              label="Change Password" 
-              active={currentPage === 'password'} 
-              onClick={() => handleNavigate('password')} 
-            />
-            <NavItem 
-              icon={<Settings className="w-4 h-4" />} 
-              label="Settings" 
-              active={currentPage === 'settings'} 
-              onClick={() => handleNavigate('settings')} 
+            <AdminNavItem
+              icon={<DollarSign className="w-4 h-4" />}
+              label="Payroll Control"
+              active={currentTab === 'payroll'}
+              onClick={() => { setCurrentTab('payroll'); setIsMobileMenuOpen(false); }}
             />
           </nav>
         </div>
 
-        {/* Bottom Sidebar */}
-        <div>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl w-full transition mb-4 cursor-pointer"
+        {/* Bottom Profile Preview */}
+        <div className="border-t border-slate-800 pt-4">
+          <div className="flex items-center gap-3 px-3 py-2 bg-slate-800/60 rounded-xl mb-3">
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+              HR
+            </div>
+            <div className="text-xs">
+              <p className="font-semibold text-white">HR SuperAdmin</p>
+              <p className="text-[10px] text-slate-400">admin@dayflow.com</p>
+            </div>
+          </div>
+          <button
+            onClick={() => alert('Logged out from Admin Session')}
+            className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 rounded-xl w-full transition cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-            <span>Logout</span>
+            <span>Admin Logout</span>
           </button>
-
-          <p className="text-[11px] text-center text-slate-400 font-medium">© 2026 Dayflow HRMS</p>
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main Admin Workspace */}
       <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 w-full max-w-full overflow-hidden">
-        {/* Header */}
+        {/* Top Header */}
         <header className="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-200 mb-6 sm:mb-8">
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition cursor-pointer"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-
-          <div className="flex items-center gap-4 sm:gap-6 ml-auto">
-            <div 
-              className="relative cursor-pointer"
-              onClick={() => alert("You have 3 notifications")}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition cursor-pointer"
             >
-              <Bell className="w-5 h-5 text-slate-500 hover:text-slate-700 transition" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
-                3
-              </span>
-            </div>
-
-            <div 
-              onClick={() => handleNavigate('profile')}
-              className="flex items-center gap-2 sm:gap-3 border-l pl-3 sm:pl-6 border-slate-200 cursor-pointer"
-              title="View full profile"
-            >
-              <img
-                src={userProfile.avatar}
-                alt="Profile"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover ring-2 ring-blue-500/20"
-              />
-              <div className="text-right leading-tight hidden sm:block">
-                <h4 className="text-sm font-semibold text-slate-800">{userProfile.name}</h4>
-                <p className="text-[11px] text-slate-400">{userProfile.designation}</p>
-              </div>
+              <Menu className="w-6 h-6" />
+            </button>
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-800">
+                {currentTab === 'employees' && 'Employee Directory & Record Management'}
+                {currentTab === 'leaves' && 'Employee Leave Approvals (Admin/HR)'}
+                {currentTab === 'attendance' && 'Company-Wide Live Attendance Records'}
+                {currentTab === 'payroll' && 'Admin Payroll Control & Structure'}
+              </h2>
+              <p className="text-xs text-slate-400">Centralized HR control console with real-time updates</p>
             </div>
           </div>
         </header>
 
-        {/* 1. DASHBOARD VIEW */}
-        {currentPage === 'dashboard' && (
-          <>
-            {/* Greeting */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        {/* 1. EMPLOYEE DIRECTORY & SWITCHING TAB */}
+        {currentTab === 'employees' && (
+          <div className="space-y-6">
+            {/* Active Selected Employee Card */}
+            <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-3xl p-6 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                <img
+                  src={activeEmployeeProfile.avatar}
+                  alt={activeEmployeeProfile.name}
+                  className="w-20 h-20 rounded-2xl object-cover ring-4 ring-white/20 shadow-lg"
+                />
+                <div>
+                  <div className="flex items-center justify-center sm:justify-start gap-2">
+                    <span className="text-[10px] font-bold bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded border border-blue-400/30">
+                      CURRENTLY VIEWING EMPLOYEE
+                    </span>
+                  </div>
+                  <h2 className="text-xl font-bold mt-1">
+                    {activeEmployeeProfile.name} ({activeEmployeeProfile.id})
+                  </h2>
+                  <p className="text-xs text-blue-200 mt-0.5">
+                    {activeEmployeeProfile.designation} • {activeEmployeeProfile.department}
+                  </p>
+                  <p className="text-xs text-slate-300 mt-1">
+                    {activeEmployeeProfile.phone} | {activeEmployeeProfile.email}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setSelectedEmployee(activeEmployeeProfile);
+                    setShowEditEmpModal(true);
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold shadow-md transition cursor-pointer"
+                >
+                  <Edit2 className="w-3.5 h-3.5" /> Edit Full Details
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedEmployee(activeEmployeeProfile);
+                    setShowPayrollModal(true);
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition cursor-pointer"
+                >
+                  <DollarSign className="w-3.5 h-3.5" /> Edit Salary Structure
+                </button>
+              </div>
+            </div>
+
+            {/* Filter and Search */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="relative w-full sm:w-80">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search by name, EMP ID, or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full text-xs pl-9 pr-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <select
+                  value={selectedDept}
+                  onChange={(e) => setSelectedDept(e.target.value)}
+                  className="text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700"
+                >
+                  <option value="All">All Departments</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Design">Design</option>
+                  <option value="Human Resources">Human Resources</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Directory Table */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+              <h3 className="font-bold text-slate-800 text-sm mb-4">Click row to Switch Profile or Edit Details</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-slate-400 font-semibold">
+                      <th className="pb-3">Employee</th>
+                      <th className="pb-3">Department & Role</th>
+                      <th className="pb-3">Annual CTC</th>
+                      <th className="pb-3">Monthly Net</th>
+                      <th className="pb-3">Status</th>
+                      <th className="pb-3 text-right">Admin Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredEmployees.map((emp) => (
+                      <tr
+                        key={emp.id}
+                        className={`hover:bg-blue-50/40 transition cursor-pointer ${
+                          activeEmployeeProfile.id === emp.id ? 'bg-blue-50/70 font-semibold' : ''
+                        }`}
+                      >
+                        <td className="py-3.5" onClick={() => setActiveEmployeeProfile(emp)}>
+                          <div className="flex items-center gap-3">
+                            <img src={emp.avatar} alt={emp.name} className="w-9 h-9 rounded-full object-cover ring-1 ring-slate-200" />
+                            <div>
+                              <p className="font-bold text-slate-800">{emp.name}</p>
+                              <p className="text-[10px] text-slate-400 font-semibold">{emp.id}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5" onClick={() => setActiveEmployeeProfile(emp)}>
+                          <p className="font-semibold text-slate-800">{emp.designation}</p>
+                          <p className="text-[10px] text-slate-400">{emp.department}</p>
+                        </td>
+                        <td className="py-3.5 font-bold text-slate-800" onClick={() => setActiveEmployeeProfile(emp)}>
+                          {emp.salary.ctc}
+                        </td>
+                        <td className="py-3.5 font-black text-emerald-600" onClick={() => setActiveEmployeeProfile(emp)}>
+                          ₹{emp.salary.netPay.toLocaleString()}
+                        </td>
+                        <td className="py-3.5" onClick={() => setActiveEmployeeProfile(emp)}>
+                          <span
+                            className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                              emp.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                            }`}
+                          >
+                            {emp.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEmployee(emp);
+                                setShowEditEmpModal(true);
+                              }}
+                              className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition cursor-pointer"
+                              title="Edit All Details"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedEmployee(emp);
+                                setShowPayrollModal(true);
+                              }}
+                              className="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition cursor-pointer"
+                              title="Edit Salary Structure"
+                            >
+                              <DollarSign className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2. LEAVE APPROVALS TAB */}
+        {currentTab === 'leaves' && (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex justify-between items-center pb-2">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-                  Good morning, {userProfile.name.split(' ')[0]}! <span>👋</span>
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Here's what's happening with your work today.</p>
+                <h3 className="font-bold text-slate-800 text-sm">Employee Leave Requests & Decision Console</h3>
+                <p className="text-xs text-slate-400">Decisions and comments immediately reflect in employee records.</p>
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl shadow-xs w-fit">
-                <CalendarCheck className="w-4 h-4 text-slate-400" />
-                <span>Thursday, 22 August 2026</span>
-              </div>
+              <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                {leaveApplications.filter((l) => l.status === 'Pending').length} Pending Requests
+              </span>
             </div>
-
-            {/* Quick Access */}
-            <div className="mb-6 sm:mb-8">
-              <h3 className="text-sm font-bold text-slate-800 mb-3">Quick Access</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <QuickActionCard
-                  icon={<User className="w-5 h-5 text-white" />}
-                  iconBg="bg-blue-600"
-                  title="Profile"
-                  desc="View personal, job, salary structure & documents"
-                  btnText="View Profile"
-                  btnColor="text-blue-600 hover:bg-blue-50"
-                  onClick={() => handleNavigate('profile')}
-                />
-                <QuickActionCard
-                  icon={<CalendarCheck className="w-5 h-5 text-white" />}
-                  iconBg="bg-emerald-500"
-                  title="Attendance"
-                  desc="Track your attendance and working hours"
-                  btnText="View Attendance"
-                  btnColor="text-emerald-600 hover:bg-emerald-50"
-                  onClick={() => handleNavigate('attendance')}
-                />
-                <QuickActionCard
-                  icon={<FileText className="w-5 h-5 text-white" />}
-                  iconBg="bg-amber-500"
-                  title="Leave Requests"
-                  desc="Apply for leave and track requests"
-                  btnText="View Leaves"
-                  btnColor="text-amber-600 hover:bg-amber-50"
-                  onClick={() => handleNavigate('leaves')}
-                />
-                <QuickActionCard
-                  icon={<LogOut className="w-5 h-5 text-white" />}
-                  iconBg="bg-rose-500"
-                  title="Logout"
-                  desc="Sign out from your account securely"
-                  btnText="Logout"
-                  btnColor="text-rose-600 hover:bg-rose-50"
-                  onClick={handleLogout}
-                />
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100 text-slate-400 font-semibold">
+                    <th className="pb-3">Employee</th>
+                    <th className="pb-3">Leave Type</th>
+                    <th className="pb-3">Duration</th>
+                    <th className="pb-3">Reason</th>
+                    <th className="pb-3">Admin Remarks</th>
+                    <th className="pb-3">Status</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {leaveApplications.map((app) => (
+                    <tr key={app.id} className="hover:bg-slate-50/60 transition">
+                      <td className="py-3.5">
+                        <p className="font-bold text-slate-800">{app.empName}</p>
+                        <p className="text-[10px] text-slate-400">{app.empId}</p>
+                      </td>
+                      <td className="py-3.5 font-bold text-slate-700">{app.type}</td>
+                      <td className="py-3.5 text-slate-600">
+                        <p>{app.dates}</p>
+                        <span className="text-[10px] text-slate-400 font-semibold">{app.days} Day(s)</span>
+                      </td>
+                      <td className="py-3.5 text-slate-500 max-w-xs">{app.reason}</td>
+                      <td className="py-3.5 text-slate-600 italic">
+                        {app.adminRemark ? `"${app.adminRemark}"` : <span className="text-slate-400">None</span>}
+                      </td>
+                      <td className="py-3.5">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            app.status === 'Approved'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : app.status === 'Rejected'
+                              ? 'bg-rose-100 text-rose-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {app.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 text-right">
+                        {app.status === 'Pending' ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => initiateLeaveAction(app, 'Approved')}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => initiateLeaveAction(app, 'Rejected')}
+                              className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => initiateLeaveAction(app, app.status)}
+                            className="text-xs text-blue-600 hover:underline font-semibold"
+                          >
+                            Edit Remark
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            {/* Row 1: Profile Summary & Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-6">
-              <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs">
-                <div className="flex justify-between items-center mb-5">
-                  <h3 className="font-bold text-slate-800 text-sm sm:text-base">Profile Summary</h3>
-                  <button 
-                    onClick={() => handleNavigate('profile')}
-                    className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline cursor-pointer"
-                  >
-                    Full Profile <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
-                  <div className="flex flex-col items-center shrink-0">
-                    <img
-                      src={userProfile.avatar}
-                      alt={userProfile.name}
-                      className="w-20 h-20 rounded-full object-cover mb-3 ring-2 ring-slate-100 shadow-sm"
-                    />
-                    <button 
-                      onClick={handleOpenPopup}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition cursor-pointer"
-                    >
-                      <Edit2 className="w-3 h-3" /> Edit
-                    </button>
-                  </div>
-
-                  <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 sm:gap-y-3 text-xs">
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Employee ID</span>
-                      <span className="font-semibold text-slate-800">{userProfile.empId}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Full Name</span>
-                      <span className="font-semibold text-slate-800">{userProfile.name}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Email</span>
-                      <span className="font-semibold text-slate-800 break-all">{userProfile.email}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Phone</span>
-                      <span className="font-semibold text-slate-800">{userProfile.phone}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Department</span>
-                      <span className="font-semibold text-slate-800">{userProfile.department}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Designation</span>
-                      <span className="font-semibold text-slate-800">{userProfile.designation}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Activity */}
-              <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-slate-800 text-sm sm:text-base">Recent Activity</h3>
-                    <button onClick={() => handleNavigate('attendance')} className="text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer">View All</button>
-                  </div>
-
-                  <div className="space-y-3.5">
-                    <ActivityItem
-                      icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                      title="You marked your attendance"
-                      time="Today, 09:15 AM"
-                    />
-                    <ActivityItem
-                      icon={<FileText className="w-4 h-4 text-amber-500" />}
-                      title="Leave request for 25 Aug 2026 is pending"
-                      time="Today, 10:30 AM"
-                    />
-                    <ActivityItem
-                      icon={<Info className="w-4 h-4 text-blue-500" />}
-                      title="Profile photo updated"
-                      time="Recently updated"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Row 2: Attendance Overview & Leave Summary */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-6">
-              <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-slate-800 text-sm sm:text-base">Attendance Overview</h3>
-                  <button className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg">
-                    This Week <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto pb-2">
-                  <div className="grid grid-cols-7 gap-2 min-w-[320px] text-center mb-4">
-                    <DayCard day="Mon" date="19" status="Present" active={false} />
-                    <DayCard day="Tue" date="20" status="Present" active={false} />
-                    <DayCard day="Wed" date="21" status="Half-day" active={false} isHalfDay />
-                    <DayCard day="Thu" date="22" status="Present" active={true} />
-                    <DayCard day="Fri" date="23" status="-" active={false} />
-                    <DayCard day="Sat" date="24" status="-" active={false} />
-                    <DayCard day="Sun" date="25" status="-" active={false} />
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-100 pt-3 gap-3 text-xs">
-                  <div className="flex gap-6">
-                    <div>
-                      <span className="text-slate-400 block text-[11px]">Check-in</span>
-                      <span className="font-bold text-slate-800">09:15 AM</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[11px]">Check-out</span>
-                      <span className="font-bold text-slate-800">06:20 PM</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[11px]">Total Hours</span>
-                      <span className="font-bold text-slate-800">09h 05m</span>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={() => handleNavigate('attendance')}
-                    className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline cursor-pointer"
-                  >
-                    View Logs <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-bold text-slate-800 text-sm sm:text-base">Leave Summary</h3>
-                    <button onClick={() => handleNavigate('leaves')} className="text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer">View All</button>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                    <LeaveStatCard title="Total" count="18" sub="days" bg="bg-blue-50/60" text="text-blue-600" />
-                    <LeaveStatCard title="Used" count="6" sub="days" bg="bg-slate-50" text="text-slate-800" />
-                    <LeaveStatCard title="Pending" count="1" sub="day" bg="bg-amber-50/60" text="text-amber-600" />
-                    <LeaveStatCard title="Remaining" count="12" sub="days" bg="bg-emerald-50/60" text="text-emerald-600" />
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => handleNavigate('leaves')}
-                  className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline pt-2 cursor-pointer"
-                >
-                  View All Leaves <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Row 3: Alerts & Payroll Overview */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-8">
-              <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs">
-                <h3 className="font-bold text-slate-800 mb-4 text-sm sm:text-base">Alerts</h3>
-                <div className="space-y-3 text-xs">
-                  <div className="bg-amber-50/70 border border-amber-100 p-3 rounded-xl flex items-start gap-3">
-                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-bold text-slate-800">Pending Leave Request</h4>
-                      <p className="text-slate-500">Your leave request for 25 Aug 2026 is pending approval.</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-blue-50/70 border border-blue-100 p-3 rounded-xl flex items-start gap-3">
-                    <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-bold text-slate-800">Attendance Reminder</h4>
-                      <p className="text-slate-500">Don't forget to mark your attendance today.</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-emerald-50/70 border border-emerald-100 p-3 rounded-xl flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-bold text-slate-800">Profile Update</h4>
-                      <p className="text-slate-500">Your profile is up to date.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-bold text-slate-800 text-sm sm:text-base">Payroll Overview</h3>
-                    <button 
-                      onClick={() => handleNavigate('payroll')}
-                      className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline cursor-pointer"
-                    >
-                      View Payslip History <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="bg-blue-50/50 border border-blue-100 text-blue-600 rounded-xl p-2.5 flex items-center gap-2 text-xs font-medium mb-4">
-                    <Info className="w-4 h-4 shrink-0" />
-                    <span>Payroll details are read-only. For any queries, contact HR.</span>
-                  </div>
-
-                  <div className="flex items-end justify-between border-b border-slate-100 pb-4 mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-slate-400">Last Salary Slip</span>
-                        <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded">Paid</span>
-                      </div>
-                      <h2 className="text-2xl font-black text-slate-800">₹ 45,000</h2>
-                      <span className="text-[11px] text-slate-400">July 2026</span>
-                    </div>
-
-                    <div className="text-right text-xs space-y-1">
-                      <div>
-                        <span className="text-slate-400 mr-2">Net Pay:</span>
-                        <span className="font-bold text-slate-800">₹ 45,000</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 mr-2">Paid On:</span>
-                        <span className="font-semibold text-slate-800">05 Aug 2026</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => handleNavigate('payroll')}
-                  className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline cursor-pointer"
-                >
-                  View Payslip <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </>
+          </div>
         )}
 
-        {/* 2. EMPLOYEE PROFILE MANAGEMENT  */}
-        {currentPage === 'profile' && (
-          <FullProfileManagementView 
-            userProfile={userProfile}
-            onOpenEditPopup={handleOpenPopup}
-            onBack={() => handleNavigate('dashboard')}
-          />
+        {/* 3. LIVE ATTENDANCE RECORDS TAB */}
+        {currentTab === 'attendance' && (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex justify-between items-center pb-2">
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Company Attendance Log (Today)</h3>
+                <p className="text-xs text-slate-400">View real-time check-in and check-out logs of all employees.</p>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                  {employees.filter((e) => e.attendanceToday === 'Present').length} Present
+                </span>
+                <span className="text-xs font-bold text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
+                  {employees.filter((e) => e.attendanceToday === 'On Leave').length} On Leave
+                </span>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100 text-slate-400 font-semibold">
+                    <th className="pb-3">Employee</th>
+                    <th className="pb-3">Department</th>
+                    <th className="pb-3">Check-in Time</th>
+                    <th className="pb-3">Check-out Time</th>
+                    <th className="pb-3 text-right">Attendance Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {employees.map((emp) => (
+                    <tr key={emp.id} className="hover:bg-slate-50/60 transition">
+                      <td className="py-3.5 font-bold text-slate-800">
+                        {emp.name} ({emp.id})
+                      </td>
+                      <td className="py-3.5 text-slate-600">{emp.department}</td>
+                      <td className="py-3.5 font-bold text-slate-700">{emp.checkIn}</td>
+                      <td className="py-3.5 font-bold text-slate-700">{emp.checkOut}</td>
+                      <td className="py-3.5 text-right">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            emp.attendanceToday === 'Present' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                          }`}
+                        >
+                          {emp.attendanceToday}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
 
-        {/* 3. CHANGE PASSWORD SCREEN */}
-        {currentPage === 'password' && (
-          <ChangePasswordView 
-            currentActualPassword={currentAccountPassword} 
-            onPasswordUpdated={(newPass) => {
-              setCurrentAccountPassword(newPass);
-              setCurrentPage('dashboard');
-            }} 
-            onBack={() => handleNavigate('dashboard')} 
-          />
+        {/* 4. PAYROLL CONTROL TAB */}
+        {currentTab === 'payroll' && (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b">
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Admin Payroll Control & Salary Structure</h3>
+                <p className="text-xs text-slate-400">View, update, and guarantee monthly payroll accuracy for all employees.</p>
+              </div>
+              <button
+                onClick={() => alert('Monthly payroll locked and verified for August 2026!')}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+              >
+                ✓ Verify & Disburse Payroll
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100 text-slate-400 font-semibold">
+                    <th className="pb-3">Employee</th>
+                    <th className="pb-3">Basic Pay</th>
+                    <th className="pb-3">HRA</th>
+                    <th className="pb-3">Special Allow.</th>
+                    <th className="pb-3">PF Deduct</th>
+                    <th className="pb-3">Net Take-Home</th>
+                    <th className="pb-3 text-right">Structure Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {employees.map((emp) => (
+                    <tr key={emp.id} className="hover:bg-slate-50/60 transition">
+                      <td className="py-3.5">
+                        <p className="font-bold text-slate-800">{emp.name}</p>
+                        <p className="text-[10px] text-slate-400">{emp.designation}</p>
+                      </td>
+                      <td className="py-3.5 font-semibold text-slate-700">₹{emp.salary.basic.toLocaleString()}</td>
+                      <td className="py-3.5 font-semibold text-slate-700">₹{emp.salary.hra.toLocaleString()}</td>
+                      <td className="py-3.5 font-semibold text-slate-700">₹{emp.salary.special.toLocaleString()}</td>
+                      <td className="py-3.5 font-semibold text-rose-600">-₹{emp.salary.pf.toLocaleString()}</td>
+                      <td className="py-3.5 font-black text-emerald-600 text-sm">
+                        ₹{emp.salary.netPay.toLocaleString()}
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <button
+                          onClick={() => {
+                            setSelectedEmployee(emp);
+                            setShowPayrollModal(true);
+                          }}
+                          className="flex items-center gap-1 ml-auto px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition cursor-pointer"
+                        >
+                          <SlidersHorizontal className="w-3.5 h-3.5" /> Edit Structure
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
-
-        {/* Generic Sub-views */}
-        {currentPage !== 'dashboard' && currentPage !== 'profile' && currentPage !== 'password' && (
-          <GenericPageView 
-            title={currentPage.toUpperCase()} 
-            desc={`Management console for ${currentPage}.`}
-            onBack={() => handleNavigate('dashboard')} 
-          />
-        )}
-
-        {/* Footer */}
-        <div className="bg-blue-50/60 border border-blue-100 rounded-xl py-3 text-center mt-6">
-          <p className="text-xs font-semibold text-blue-600">
-            "Stay focused, stay consistent, and success will follow."
-          </p>
-        </div>
       </main>
 
-      {/* ===================== 3.3.2 EDIT PROFILE MODAL (RESTRICTED PERMISSION) ===================== */}
-      {showEditPopup && (
+      {/* MODAL 1: FULL ADMIN EMPLOYEE EDIT */}
+      {showEditEmpModal && selectedEmployee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden max-h-[90vh] flex flex-col">
-            
-            {/* Modal Header */}
-            <div className="flex justify-between items-center px-4 sm:px-6 py-3.5 border-b border-slate-100 bg-slate-50/50 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                  <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-800">Edit Profile</h3>
-                  <p className="text-[10px] text-slate-400">Employees can only update address, phone & profile picture</p>
-                </div>
-              </div>
-              <button 
-                onClick={handleClosePopup}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-sm font-bold text-slate-800">Admin Edit: {selectedEmployee.name}</h3>
+              <button
+                onClick={() => setShowEditEmpModal(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Modal Form */}
-            <form onSubmit={handleSaveProfile} className="p-4 sm:p-6 space-y-4 overflow-y-auto">
-              
-              {/* Photo Upload Section */}
-              <div className="flex items-center gap-3 sm:gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="relative group shrink-0">
-                  <img
-                    src={editFormData.avatar}
-                    alt="Preview"
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-2 ring-blue-500 shadow-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                    className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition cursor-pointer"
-                  >
-                    <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
-
-                <div className="flex-1">
-                  <h4 className="text-xs font-bold text-slate-800">Profile Picture</h4>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                    className="mt-1 flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold shadow-xs cursor-pointer"
-                  >
-                    <Camera className="w-3 h-3 text-blue-600" /> Upload New Photo
-                  </button>
-                </div>
-              </div>
-
-              {/* Editable Fields Section */}
-              <div className="space-y-3 text-xs">
+            <form onSubmit={handleSaveEmployeeEdit} className="p-6 space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 font-semibold mb-1">Phone Number</label>
+                  <label className="block font-semibold text-slate-600 mb-1">Full Name</label>
                   <input
                     type="text"
-                    value={editFormData.phone}
-                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-blue-200 bg-blue-50/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800"
+                    value={selectedEmployee.name}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, name: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-xl"
                     required
                   />
                 </div>
-
                 <div>
-                  <label className="block text-slate-600 font-semibold mb-1">Residential Address (Editable)</label>
-                  <textarea
-                    rows={2}
-                    value={editFormData.address}
-                    onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
-                    className="w-full px-3 py-2 border border-blue-200 bg-blue-50/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 resize-none"
+                  <label className="block font-semibold text-slate-600 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={selectedEmployee.email}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, email: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-xl"
                     required
                   />
                 </div>
-
                 <div>
-                  <label className="block text-slate-600 font-semibold mb-1">Emergency Contact</label>
+                  <label className="block font-semibold text-slate-600 mb-1">Phone</label>
                   <input
                     type="text"
-                    value={editFormData.emergencyContact}
-                    onChange={(e) => setEditFormData({ ...editFormData, emergencyContact: e.target.value })}
-                    className="w-full px-3 py-2 border border-blue-200 bg-blue-50/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800"
+                    value={selectedEmployee.phone}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, phone: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Department</label>
+                  <select
+                    value={selectedEmployee.department}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, department: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-xl bg-white"
+                  >
+                    <option value="Engineering">Engineering</option>
+                    <option value="Design">Design</option>
+                    <option value="Human Resources">Human Resources</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Designation</label>
+                  <input
+                    type="text"
+                    value={selectedEmployee.designation}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, designation: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Status</label>
+                  <select
+                    value={selectedEmployee.status}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, status: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-xl bg-white"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="On Leave">On Leave</option>
+                    <option value="Deactivated">Deactivated</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onClick={() => setShowEditEmpModal(false)} className="px-4 py-2 text-slate-600">Cancel</button>
+                <button type="submit" className="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-md">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: SALARY STRUCTURE UPDATE */}
+      {showPayrollModal && selectedEmployee && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Update Salary Structure</h3>
+                <p className="text-[11px] text-slate-400">Employee: {selectedEmployee.name}</p>
+              </div>
+              <button onClick={() => setShowPayrollModal(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSaveSalaryStructure} className="p-6 space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-600 mb-1">Annual CTC</label>
+                <input
+                  type="text"
+                  value={selectedEmployee.salary.ctc}
+                  onChange={(e) => setSelectedEmployee({
+                    ...selectedEmployee,
+                    salary: { ...selectedEmployee.salary, ctc: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border rounded-xl"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Basic Monthly (₹)</label>
+                  <input
+                    type="number"
+                    value={selectedEmployee.salary.basic}
+                    onChange={(e) => setSelectedEmployee({
+                      ...selectedEmployee,
+                      salary: { ...selectedEmployee.salary, basic: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">HRA (₹)</label>
+                  <input
+                    type="number"
+                    value={selectedEmployee.salary.hra}
+                    onChange={(e) => setSelectedEmployee({
+                      ...selectedEmployee,
+                      salary: { ...selectedEmployee.salary, hra: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Special Allowance (₹)</label>
+                  <input
+                    type="number"
+                    value={selectedEmployee.salary.special}
+                    onChange={(e) => setSelectedEmployee({
+                      ...selectedEmployee,
+                      salary: { ...selectedEmployee.salary, special: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">PF Deduction (₹)</label>
+                  <input
+                    type="number"
+                    value={selectedEmployee.salary.pf}
+                    onChange={(e) => setSelectedEmployee({
+                      ...selectedEmployee,
+                      salary: { ...selectedEmployee.salary, pf: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 border rounded-xl"
                     required
                   />
                 </div>
               </div>
-
-              {/* Locked Notice & Fields */}
-              <div className="pt-2">
-                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2 text-amber-700 text-[11px] font-medium mb-3">
-                  <ShieldAlert className="w-4 h-4 shrink-0" />
-                  <span>Name, Email, Job Details & Salary are restricted and can only be altered by HR.</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Full Name (Locked)</span>
-                    <input type="text" value={userProfile.name} disabled className="w-full p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-400 cursor-not-allowed" />
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Employee ID (Locked)</span>
-                    <input type="text" value={userProfile.empId} disabled className="w-full p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-400 cursor-not-allowed" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Actions */}
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={handleClosePopup}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
-                >
-                  Cancel
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button type="button" onClick={() => setShowPayrollModal(false)} className="px-4 py-2 text-slate-600">Cancel</button>
+                <button type="submit" className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md">
+                  Update & Recalculate
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: LEAVE APPROVAL & ADMIN COMMENTS */}
+      {showLeaveRemarkModal && selectedLeaveReq && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-sm font-bold text-slate-800">
+                {leaveActionType} Leave Request
+              </h3>
+              <button onClick={() => setShowLeaveRemarkModal(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={submitLeaveDecision} className="p-6 space-y-4 text-xs">
+              <div className="bg-slate-50 p-3 rounded-xl border">
+                <p className="font-bold text-slate-800">{selectedLeaveReq.empName} ({selectedLeaveReq.empId})</p>
+                <p className="text-slate-500">{selectedLeaveReq.type} • {selectedLeaveReq.dates}</p>
+                <p className="text-slate-400 italic mt-1">Reason: "{selectedLeaveReq.reason}"</p>
+              </div>
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1.5">Admin Comments/Remarks</label>
+                <textarea
+                  rows={3}
+                  value={adminRemarkText}
+                  onChange={(e) => setAdminRemarkText(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 font-medium resize-none"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <button type="button" onClick={() => setShowLeaveRemarkModal(false)} className="px-4 py-2 text-slate-600">Cancel</button>
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition cursor-pointer"
+                  className={`px-5 py-2 text-white font-bold rounded-xl shadow-md ${
+                    leaveActionType === 'Approved' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                  }`}
                 >
-                  <Save className="w-3.5 h-3.5" /> Save Changes
+                  Confirm {leaveActionType}
                 </button>
               </div>
             </form>
@@ -769,474 +972,24 @@ export default function DayflowDashboard() {
   );
 }
 
-/* ----------------- 3.3.1 VIEW PROFILE FULL COMPONENT ----------------- */
-
-function FullProfileManagementView({ userProfile, onOpenEditPopup, onBack }) {
-  const [activeTab, setActiveTab] = useState('personal');
-
-  return (
-    <div className="space-y-6">
-      {/* Top Banner Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-          <div className="relative">
-            <img
-              src={userProfile.avatar}
-              alt={userProfile.name}
-              className="w-24 h-24 rounded-2xl object-cover ring-4 ring-blue-50 shadow-md"
-            />
-          </div>
-          <div>
-            <div className="flex items-center justify-center sm:justify-start gap-2">
-              <h2 className="text-xl font-bold text-slate-900">{userProfile.name}</h2>
-              <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-100">
-                {userProfile.empId}
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 mt-0.5">{userProfile.designation} • {userProfile.department}</p>
-            <p className="text-[11px] text-slate-400 mt-1">Reporting to: <span className="font-semibold text-slate-700">{userProfile.manager}</span></p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onOpenEditPopup}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition cursor-pointer"
-          >
-            <Edit2 className="w-3.5 h-3.5" /> Edit Profile
-          </button>
-          <button
-            onClick={onBack}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold transition cursor-pointer"
-          >
-            ← Back
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation Sub-Tabs (3.3.1) */}
-      <div className="flex border-b border-slate-200 space-x-2 overflow-x-auto pb-1">
-        <TabButton active={activeTab === 'personal'} onClick={() => setActiveTab('personal')} icon={<User className="w-4 h-4" />} label="Personal Details" />
-        <TabButton active={activeTab === 'job'} onClick={() => setActiveTab('job')} icon={<Briefcase className="w-4 h-4" />} label="Job Details" />
-        <TabButton active={activeTab === 'salary'} onClick={() => setActiveTab('salary')} icon={<CreditCard className="w-4 h-4" />} label="Salary Structure" />
-        <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<FileCheck className="w-4 h-4" />} label="Documents" />
-      </div>
-
-      {/* TAB CONTENT PANELS */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-        
-        {/* 1. Personal Details */}
-        {activeTab === 'personal' && (
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600" /> Personal Information
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
-              <InfoItem label="Full Name" value={userProfile.name} />
-              <InfoItem label="Email Address" value={userProfile.email} />
-              <InfoItem label="Mobile Number" value={userProfile.phone} highlight />
-              <InfoItem label="Date of Birth" value={userProfile.dob} />
-              <InfoItem label="Gender" value={userProfile.gender} />
-              <InfoItem label="Emergency Contact" value={userProfile.emergencyContact} highlight />
-              <div className="sm:col-span-2 lg:col-span-3">
-                <InfoItem label="Residential Address" value={userProfile.address} highlight />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 2. Job Details */}
-        {activeTab === 'job' && (
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-blue-600" /> Employment & Organization Details
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
-              <InfoItem label="Employee ID" value={userProfile.empId} />
-              <InfoItem label="Department" value={userProfile.department} />
-              <InfoItem label="Designation" value={userProfile.designation} />
-              <InfoItem label="Date of Joining" value={userProfile.doj} />
-              <InfoItem label="Employment Type" value={userProfile.employmentType} />
-              <InfoItem label="Work Location" value={userProfile.workLocation} />
-              <InfoItem label="Reporting Manager" value={userProfile.manager} />
-              <InfoItem label="Employment Status" value="Active (Permanent)" isBadge />
-            </div>
-          </div>
-        )}
-
-        {/* 3. Salary Structure */}
-        {activeTab === 'salary' && (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-blue-600" /> Compensation & Breakdown
-              </h3>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
-                Annual CTC: {userProfile.salary.ctc}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              {/* Earnings */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5">
-                <h4 className="font-bold text-slate-700 pb-2 border-b border-slate-200">Earnings</h4>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Basic Pay</span>
-                  <span className="font-semibold text-slate-800">{userProfile.salary.basic}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">House Rent Allowance (HRA)</span>
-                  <span className="font-semibold text-slate-800">{userProfile.salary.hra}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Special Allowance</span>
-                  <span className="font-semibold text-slate-800">{userProfile.salary.specialAllowance}</span>
-                </div>
-              </div>
-
-              {/* Deductions */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5">
-                <h4 className="font-bold text-slate-700 pb-2 border-b border-slate-200">Monthly Deductions</h4>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Provident Fund (PF)</span>
-                  <span className="font-semibold text-rose-600">- {userProfile.salary.pfDeduction}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Professional Tax (PT)</span>
-                  <span className="font-semibold text-rose-600">- {userProfile.salary.professionalTax}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-slate-200">
-                  <span className="font-bold text-slate-800">Net Monthly Salary (In-hand)</span>
-                  <span className="font-black text-emerald-600 text-sm">{userProfile.salary.netSalary}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 4. Documents */}
-        {activeTab === 'documents' && (
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <FileCheck className="w-4 h-4 text-blue-600" /> Uploaded & Verified Records
-            </h3>
-            
-            <div className="space-y-3">
-              {userProfile.documents.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px]">
-                      {doc.type}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-800 text-xs">{doc.name}</p>
-                      <p className="text-[10px] text-slate-400">Uploaded on {doc.date} • <span className="text-emerald-600 font-semibold">{doc.status}</span></p>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={() => alert(`Downloading ${doc.name}...`)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Download
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-      </div>
-    </div>
-  );
-}
-
-/* Helper Info Item Components */
-function InfoItem({ label, value, highlight, isBadge }) {
-  return (
-    <div>
-      <span className="text-slate-400 block mb-1 text-[11px] font-medium">{label}</span>
-      {isBadge ? (
-        <span className="bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded text-[10px]">
-          {value}
-        </span>
-      ) : (
-        <span className={`font-semibold ${highlight ? 'text-blue-700 font-bold' : 'text-slate-800'}`}>
-          {value}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function TabButton({ active, onClick, icon, label }) {
+{/* Helper Nav Item */}
+function AdminNavItem({ icon, label, active, onClick, badge, badgeColor = 'bg-blue-600' }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-        active 
-          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200' 
-          : 'text-slate-600 hover:bg-slate-100'
+      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold w-full transition cursor-pointer ${
+        active ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
       }`}
     >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
-
-/* ----------------- CHANGE PASSWORD COMPONENT ----------------- */
-
-function ChangePasswordView({ currentActualPassword, onPasswordUpdated, onBack }) {
-  const [passData, setPassData] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  const [showOld, setShowOld] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    if (passData.oldPassword !== currentActualPassword) {
-      setErrorMsg('Current password is incorrect! (Default test password is: password123)');
-      return;
-    }
-
-    if (passData.newPassword.length < 6) {
-      setErrorMsg('New password must be at least 6 characters long.');
-      return;
-    }
-
-    if (passData.newPassword !== passData.confirmPassword) {
-      setErrorMsg('New password and Confirm password do not match.');
-      return;
-    }
-
-    setSuccessMsg('Password changed successfully! Redirecting...');
-    setTimeout(() => {
-      onPasswordUpdated(passData.newPassword);
-    }, 1200);
-  };
-
-  return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-8 shadow-xs max-w-2xl">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Lock className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-800">Change Password</h2>
-            <p className="text-xs text-slate-400">Ensure your account uses a secure password</p>
-          </div>
-        </div>
-        <button 
-          onClick={onBack}
-          className="px-3 py-1.5 bg-blue-50 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-100 transition cursor-pointer"
-        >
-          ← Back
-        </button>
+      <div className="flex items-center gap-3">
+        {icon}
+        <span>{label}</span>
       </div>
-
-      {errorMsg && (
-        <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-center gap-2 text-rose-600 text-xs font-semibold">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
-          <span>{errorMsg}</span>
-        </div>
+      {badge !== undefined && (
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${badgeColor}`}>
+          {badge}
+        </span>
       )}
-
-      {successMsg && (
-        <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-2 text-emerald-600 text-xs font-semibold">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{successMsg}</span>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Current Password</label>
-          <div className="relative">
-            <input
-              type={showOld ? 'text' : 'password'}
-              value={passData.oldPassword}
-              onChange={(e) => setPassData({ ...passData, oldPassword: e.target.value })}
-              placeholder="Enter current password"
-              className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowOld(!showOld)}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">New Password</label>
-          <div className="relative">
-            <input
-              type={showNew ? 'text' : 'password'}
-              value={passData.newPassword}
-              onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
-              placeholder="Enter new password (min 6 chars)"
-              className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5">Confirm New Password</label>
-          <div className="relative">
-            <input
-              type={showConfirm ? 'text' : 'password'}
-              value={passData.confirmPassword}
-              onChange={(e) => setPassData({ ...passData, confirmPassword: e.target.value })}
-              placeholder="Re-type new password"
-              className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        <div className="pt-2">
-          <button
-            type="submit"
-            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-200 transition flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <KeyRound className="w-4 h-4" /> Update Password
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-/* ----------------- HELPER COMPONENTS ----------------- */
-
-function GenericPageView({ title, desc, onBack }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-        <div>
-          <h2 className="text-lg sm:text-xl font-bold text-slate-800">{title}</h2>
-          <p className="text-xs text-slate-400 mt-1">{desc}</p>
-        </div>
-        <button 
-          onClick={onBack}
-          className="px-3 py-1.5 bg-blue-50 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-100 transition cursor-pointer"
-        >
-          ← Back to Dashboard
-        </button>
-      </div>
-      <div className="py-12 text-center text-slate-400 text-xs">Section under active development</div>
-    </div>
-  );
-}
-
-function NavItem({ icon, label, active, onClick }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold w-full transition cursor-pointer ${
-        active 
-          ? 'bg-blue-50 text-blue-600' 
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-      }`}
-    >
-      {icon}
-      <span>{label}</span>
     </button>
-  );
-}
-
-function QuickActionCard({ icon, iconBg, title, desc, btnText, btnColor, onClick }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-40">
-      <div>
-        <div className={`w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center mb-2.5 shadow-xs`}>
-          {icon}
-        </div>
-        <h4 className="font-bold text-slate-800 text-sm mb-0.5">{title}</h4>
-        <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">{desc}</p>
-      </div>
-      <button 
-        onClick={onClick}
-        className={`flex items-center gap-1 text-xs font-bold ${btnColor} py-1 px-2 rounded-lg w-fit transition cursor-pointer`}
-      >
-        {btnText} <ArrowRight className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
-
-function ActivityItem({ icon, title, time }) {
-  return (
-    <div className="flex items-start gap-3 text-xs">
-      <div className="mt-0.5 shrink-0">{icon}</div>
-      <div>
-        <p className="font-semibold text-slate-800 leading-tight">{title}</p>
-        <p className="text-[10px] text-slate-400">{time}</p>
-      </div>
-    </div>
-  );
-}
-
-function DayCard({ day, date, status, active, isHalfDay }) {
-  return (
-    <div
-      className={`border rounded-xl p-1.5 sm:p-2 flex flex-col items-center justify-center ${
-        active ? 'border-blue-500 bg-blue-50/30' : 'border-slate-200 bg-white'
-      }`}
-    >
-      <span className="text-[10px] text-slate-400 font-medium">{day}</span>
-      <span className={`text-xs sm:text-sm font-bold my-0.5 ${active ? 'text-blue-600' : 'text-slate-800'}`}>{date}</span>
-      <span
-        className={`text-[8px] sm:text-[9px] font-bold px-1 rounded ${
-          status === 'Present'
-            ? 'text-emerald-600 bg-emerald-50'
-            : isHalfDay
-            ? 'text-amber-600 bg-amber-50'
-            : 'text-slate-400'
-        }`}
-      >
-        {status}
-      </span>
-    </div>
-  );
-}
-
-function LeaveStatCard({ title, count, sub, bg, text }) {
-  return (
-    <div className={`${bg} rounded-xl p-2 sm:p-2.5 text-center border border-slate-100`}>
-      <span className="text-[9px] font-semibold text-slate-500 block leading-tight mb-0.5">{title}</span>
-      <span className={`text-base sm:text-xl font-black ${text}`}>{count}</span>
-      <span className="text-[10px] text-slate-400 ml-1">{sub}</span>
-    </div>
   );
 }
