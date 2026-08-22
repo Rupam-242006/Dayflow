@@ -25,34 +25,81 @@ import {
   Lock,
   Download,
   Briefcase,
-  Home,
   CreditCard,
   FileCheck,
-  ShieldAlert
+  ShieldAlert,
+  LogIn,
+  Clock,
+  PlusCircle,
+  Calendar
 } from 'lucide-react';
 
 export default function DayflowDashboard() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [showEditPopup, setShowEditPopup] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Security Account Password
+  // Security Password
   const [currentAccountPassword, setCurrentAccountPassword] = useState('password123');
 
-  // Complete Employee Profile State (3.3.1 & 3.3.2)
+  // Attendance State
+  const [attendanceStatus, setAttendanceStatus] = useState('not-checked-in');
+  const [checkInTime, setCheckInTime] = useState('--:-- --');
+  const [checkOutTime, setCheckOutTime] = useState('--:-- --');
+  const [totalWorkHours, setTotalWorkHours] = useState('00h 00m');
+  const [checkInTimestamp, setCheckInTimestamp] = useState(null);
+
+  // Leave Management State
+  const [leaveStats, setLeaveStats] = useState({
+    total: 18,
+    used: 6,
+    pending: 1,
+    remaining: 12
+  });
+
+  const [leaveRequests, setLeaveRequests] = useState([
+    {
+      id: 1,
+      type: 'Sick Leave',
+      startDate: '2026-08-25',
+      endDate: '2026-08-26',
+      days: 2,
+      remarks: 'Viral fever and doctor consultation',
+      appliedOn: '20 Aug 2026',
+      status: 'Pending'
+    },
+    {
+      id: 2,
+      type: 'Paid Leave',
+      startDate: '2026-07-10',
+      endDate: '2026-07-12',
+      days: 3,
+      remarks: 'Family trip to Puri',
+      appliedOn: '01 Jul 2026',
+      status: 'Approved'
+    }
+  ]);
+
+  // Leave Form State
+  const [leaveForm, setLeaveForm] = useState({
+    type: 'Paid',
+    startDate: '',
+    endDate: '',
+    remarks: ''
+  });
+
+  // User Profile Data
   const [userProfile, setUserProfile] = useState({
-    // Personal Details
-    name: 'XXXXXXX XXXXX',
-    email: 'XXXXXXX@example.com',
+    name: 'Surajeet Patra',
+    email: 'surajeet@example.com',
     phone: '+91 98765 43210',
     dob: '15 Aug 2000',
     gender: 'Male',
     address: 'Plot 42, Tech Park Residency, Bhubaneswar, Odisha',
-    emergencyContact: '+91 91234 56789',
+    emergencyContact: '+91 91234 56789 (Father)',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-
-    // Job Details
     empId: 'EMP00123',
     department: 'Engineering',
     designation: 'Frontend Developer',
@@ -60,8 +107,6 @@ export default function DayflowDashboard() {
     manager: 'Rohit Sharma',
     employmentType: 'Full-time (Permanent)',
     workLocation: 'Smart Office / Hybrid',
-
-    // Salary Structure
     salary: {
       ctc: '₹ 6,00,000 / annum',
       basic: '₹ 25,000',
@@ -71,8 +116,6 @@ export default function DayflowDashboard() {
       professionalTax: '₹ 200',
       netSalary: '₹ 45,000 / month'
     },
-
-    // Documents
     documents: [
       { id: 1, name: 'National ID (Aadhaar / Passport)', type: 'PDF', date: '02 Jan 2024', status: 'Verified' },
       { id: 2, name: 'PAN Card Copy', type: 'PDF', date: '02 Jan 2024', status: 'Verified' },
@@ -81,13 +124,74 @@ export default function DayflowDashboard() {
     ]
   });
 
-  // Limited Editable Fields for 3.3.2
   const [editFormData, setEditFormData] = useState({
     phone: userProfile.phone,
     address: userProfile.address,
     emergencyContact: userProfile.emergencyContact,
     avatar: userProfile.avatar
   });
+
+  // Check In Handler
+  const handleCheckIn = () => {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    setCheckInTime(timeString);
+    setCheckInTimestamp(now);
+    setAttendanceStatus('checked-in');
+  };
+
+  // Check Out Handler
+  const handleCheckOut = () => {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    setCheckOutTime(timeString);
+    setAttendanceStatus('checked-out');
+
+    if (checkInTimestamp) {
+      const diffMs = now - checkInTimestamp;
+      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      setTotalWorkHours(`${String(diffHrs).padStart(2, '0')}h ${String(diffMins).padStart(2, '0')}m`);
+    } else {
+      setTotalWorkHours('08h 30m');
+    }
+  };
+
+  // Handle Leave Submission
+  const handleApplyLeave = (e) => {
+    e.preventDefault();
+    if (!leaveForm.startDate || !leaveForm.endDate) {
+      alert('Please select both start and end dates.');
+      return;
+    }
+
+    const start = new Date(leaveForm.startDate);
+    const end = new Date(leaveForm.endDate);
+
+    if (end < start) {
+      alert('End date cannot be earlier than start date.');
+      return;
+    }
+
+    const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+    const newRequest = {
+      id: Date.now(),
+      type: `${leaveForm.type} Leave`,
+      startDate: leaveForm.startDate,
+      endDate: leaveForm.endDate,
+      days: diffDays,
+      remarks: leaveForm.remarks || 'No remarks provided',
+      appliedOn: 'Today',
+      status: 'Pending'
+    };
+
+    setLeaveRequests([newRequest, ...leaveRequests]);
+    setLeaveStats((prev) => ({ ...prev, pending: prev.pending + 1 }));
+    setShowLeaveModal(false);
+    setLeaveForm({ type: 'Paid', startDate: '', endDate: '', remarks: '' });
+    alert(`Leave request for ${diffDays} day(s) submitted successfully!`);
+  };
 
   const handleOpenPopup = () => {
     setEditFormData({
@@ -261,9 +365,41 @@ export default function DayflowDashboard() {
             <Menu className="w-6 h-6" />
           </button>
 
-          <div className="flex items-center gap-4 sm:gap-6 ml-auto">
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Quick Header Check-in / Check-out Button */}
+            {attendanceStatus === 'not-checked-in' && (
+              <button
+                onClick={handleCheckIn}
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm shadow-emerald-200 transition cursor-pointer"
+              >
+                <LogIn className="w-3.5 h-3.5" /> Check In
+              </button>
+            )}
+
+            {attendanceStatus === 'checked-in' && (
+              <button
+                onClick={handleCheckOut}
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-sm shadow-rose-200 transition animate-pulse cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" /> Check Out
+              </button>
+            )}
+
+            {attendanceStatus === 'checked-out' && (
+              <span className="bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Completed
+              </span>
+            )}
+
+            <button
+              onClick={() => setShowLeaveModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-bold transition cursor-pointer"
+            >
+              <PlusCircle className="w-3.5 h-3.5" /> Apply Leave
+            </button>
+
             <div 
-              className="relative cursor-pointer"
+              className="relative cursor-pointer ml-2"
               onClick={() => alert("You have 3 notifications")}
             >
               <Bell className="w-5 h-5 text-slate-500 hover:text-slate-700 transition" />
@@ -274,7 +410,7 @@ export default function DayflowDashboard() {
 
             <div 
               onClick={() => handleNavigate('profile')}
-              className="flex items-center gap-2 sm:gap-3 border-l pl-3 sm:pl-6 border-slate-200 cursor-pointer"
+              className="flex items-center gap-2 sm:gap-3 border-l pl-3 sm:pl-4 border-slate-200 cursor-pointer"
               title="View full profile"
             >
               <img
@@ -303,18 +439,18 @@ export default function DayflowDashboard() {
               </div>
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl shadow-xs w-fit">
                 <CalendarCheck className="w-4 h-4 text-slate-400" />
-                <span>Thursday, 22 August 2026</span>
+                <span>Saturday, 22 August 2026</span>
               </div>
             </div>
 
-            {/* Quick Access */}
+            {/* Quick Access Cards */}
             <div className="mb-6 sm:mb-8">
               <h3 className="text-sm font-bold text-slate-800 mb-3">Quick Access</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <QuickActionCard
                   icon={<User className="w-5 h-5 text-white" />}
                   iconBg="bg-blue-600"
-                  title="Profile"
+                  title="Profile (3.3.1)"
                   desc="View personal, job, salary structure & documents"
                   btnText="View Profile"
                   btnColor="text-blue-600 hover:bg-blue-50"
@@ -334,9 +470,9 @@ export default function DayflowDashboard() {
                   iconBg="bg-amber-500"
                   title="Leave Requests"
                   desc="Apply for leave and track requests"
-                  btnText="View Leaves"
+                  btnText="Apply Leave"
                   btnColor="text-amber-600 hover:bg-amber-50"
-                  onClick={() => handleNavigate('leaves')}
+                  onClick={() => setShowLeaveModal(true)}
                 />
                 <QuickActionCard
                   icon={<LogOut className="w-5 h-5 text-white" />}
@@ -374,7 +510,7 @@ export default function DayflowDashboard() {
                       onClick={handleOpenPopup}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition cursor-pointer"
                     >
-                      <Edit2 className="w-3 h-3" /> Edit
+                      <Edit2 className="w-3 h-3" /> Edit (3.3.2)
                     </button>
                   </div>
 
@@ -418,17 +554,17 @@ export default function DayflowDashboard() {
                   <div className="space-y-3.5">
                     <ActivityItem
                       icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                      title="You marked your attendance"
-                      time="Today, 09:15 AM"
+                      title={attendanceStatus === 'checked-in' ? `Checked in at ${checkInTime}` : 'Attendance ready'}
+                      time={attendanceStatus === 'checked-in' ? 'Today, Live' : 'Today, 09:15 AM'}
                     />
                     <ActivityItem
                       icon={<FileText className="w-4 h-4 text-amber-500" />}
-                      title="Leave request for 25 Aug 2026 is pending"
-                      time="Today, 10:30 AM"
+                      title={`Leave request for ${leaveRequests[0]?.type || 'Leave'} is ${leaveRequests[0]?.status}`}
+                      time={leaveRequests[0]?.appliedOn || 'Today'}
                     />
                     <ActivityItem
                       icon={<Info className="w-4 h-4 text-blue-500" />}
-                      title="Profile photo updated"
+                      title="Profile information verified"
                       time="Recently updated"
                     />
                   </div>
@@ -438,71 +574,123 @@ export default function DayflowDashboard() {
 
             {/* Row 2: Attendance Overview & Leave Summary */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-6">
-              <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-slate-800 text-sm sm:text-base">Attendance Overview</h3>
-                  <button className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg">
+              <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-sm sm:text-base">Weekly Attendance</h3>
+                    <p className="text-[11px] text-slate-400">August 2026 • Week 4</p>
+                  </div>
+                  <button className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full hover:bg-slate-100 transition">
                     This Week <ChevronDown className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="overflow-x-auto pb-2">
-                  <div className="grid grid-cols-7 gap-2 min-w-[320px] text-center mb-4">
-                    <DayCard day="Mon" date="19" status="Present" active={false} />
-                    <DayCard day="Tue" date="20" status="Present" active={false} />
-                    <DayCard day="Wed" date="21" status="Half-day" active={false} isHalfDay />
-                    <DayCard day="Thu" date="22" status="Present" active={true} />
-                    <DayCard day="Fri" date="23" status="-" active={false} />
-                    <DayCard day="Sat" date="24" status="-" active={false} />
-                    <DayCard day="Sun" date="25" status="-" active={false} />
+                <div className="overflow-x-auto pb-3 mb-5">
+                  <div className="flex justify-between items-center min-w-[340px] px-2">
+                    <RoundDayItem day="Mon" date="17" status="present" />
+                    <RoundDayItem day="Tue" date="18" status="present" />
+                    <RoundDayItem day="Wed" date="19" status="half" />
+                    <RoundDayItem day="Thu" date="20" status="present" />
+                    <RoundDayItem day="Fri" date="21" status="present" />
+                    <RoundDayItem 
+                      day="Sat" 
+                      date="22" 
+                      status={attendanceStatus === 'not-checked-in' ? 'today-pending' : 'present'} 
+                      isToday 
+                    />
+                    <RoundDayItem day="Sun" date="23" status="weekend" />
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-100 pt-3 gap-3 text-xs">
-                  <div className="flex gap-6">
-                    <div>
-                      <span className="text-slate-400 block text-[11px]">Check-in</span>
-                      <span className="font-bold text-slate-800">09:15 AM</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-100 pt-4 gap-4 text-xs">
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative w-12 h-12 flex items-center justify-center">
+                      <svg className="w-12 h-12 transform -rotate-90">
+                        <circle cx="24" cy="24" r="20" stroke="#f1f5f9" strokeWidth="4" fill="transparent" />
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          stroke={attendanceStatus === 'checked-out' ? '#10b981' : '#2563eb'}
+                          strokeWidth="4"
+                          strokeDasharray="125.6"
+                          strokeDashoffset={125.6 - (125.6 * (attendanceStatus === 'checked-out' ? 100 : attendanceStatus === 'checked-in' ? 45 : 0)) / 100}
+                          strokeLinecap="round"
+                          fill="transparent"
+                          className="transition-all duration-700 ease-out"
+                        />
+                      </svg>
+                      <span className="absolute text-[10px] font-black text-slate-700">
+                        {attendanceStatus === 'checked-out' ? '100%' : attendanceStatus === 'checked-in' ? '45%' : '0%'}
+                      </span>
                     </div>
+
                     <div>
-                      <span className="text-slate-400 block text-[11px]">Check-out</span>
-                      <span className="font-bold text-slate-800">06:20 PM</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[11px]">Total Hours</span>
-                      <span className="font-bold text-slate-800">09h 05m</span>
+                      <span className="text-slate-400 block text-[10px] font-medium">Daily Target (09 hrs)</span>
+                      <span className="font-bold text-slate-800 text-sm">{totalWorkHours}</span>
                     </div>
                   </div>
 
-                  <button 
-                    onClick={() => handleNavigate('attendance')}
-                    className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline cursor-pointer"
-                  >
-                    View Logs <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-5">
+                    <div className="text-left">
+                      <span className="text-slate-400 block text-[10px]">Check-in</span>
+                      <span className="font-bold text-slate-700 text-xs">{checkInTime}</span>
+                    </div>
+                    <div className="text-left">
+                      <span className="text-slate-400 block text-[10px]">Check-out</span>
+                      <span className="font-bold text-slate-700 text-xs">{checkOutTime}</span>
+                    </div>
+                    <button 
+                      onClick={() => handleNavigate('attendance')}
+                      className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1 transition cursor-pointer"
+                    >
+                      Logs <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col justify-between">
+              {/* Leave Summary Card */}
+              <div className="lg:col-span-5 bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex justify-between items-center mb-4">
                     <h3 className="font-bold text-slate-800 text-sm sm:text-base">Leave Summary</h3>
-                    <button onClick={() => handleNavigate('leaves')} className="text-xs font-semibold text-slate-500 hover:text-slate-700 cursor-pointer">View All</button>
+                    <button 
+                      onClick={() => setShowLeaveModal(true)} 
+                      className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" /> Apply
+                    </button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                    <LeaveStatCard title="Total" count="18" sub="days" bg="bg-blue-50/60" text="text-blue-600" />
-                    <LeaveStatCard title="Used" count="6" sub="days" bg="bg-slate-50" text="text-slate-800" />
-                    <LeaveStatCard title="Pending" count="1" sub="day" bg="bg-amber-50/60" text="text-amber-600" />
-                    <LeaveStatCard title="Remaining" count="12" sub="days" bg="bg-emerald-50/60" text="text-emerald-600" />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                    <LeaveStatCard title="Total" count={leaveStats.total} sub="days" bg="bg-blue-50/60" text="text-blue-600" />
+                    <LeaveStatCard title="Used" count={leaveStats.used} sub="days" bg="bg-slate-50" text="text-slate-800" />
+                    <LeaveStatCard title="Pending" count={leaveStats.pending} sub="day" bg="bg-amber-50/60" text="text-amber-600" />
+                    <LeaveStatCard title="Remaining" count={leaveStats.remaining} sub="days" bg="bg-emerald-50/60" text="text-emerald-600" />
                   </div>
+
+                  {leaveRequests.length > 0 && (
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-semibold text-slate-800">{leaveRequests[0].type}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                          leaveRequests[0].status === 'Approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {leaveRequests[0].status}
+                        </span>
+                      </div>
+                      <p className="text-slate-400 text-[11px]">{leaveRequests[0].startDate} to {leaveRequests[0].endDate} ({leaveRequests[0].days} days)</p>
+                      <p className="text-slate-500 text-[11px] truncate mt-0.5">{leaveRequests[0].remarks}</p>
+                    </div>
+                  )}
                 </div>
 
                 <button 
                   onClick={() => handleNavigate('leaves')}
                   className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline pt-2 cursor-pointer"
                 >
-                  View All Leaves <ArrowRight className="w-3.5 h-3.5" />
+                  View All Leave History <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -516,7 +704,7 @@ export default function DayflowDashboard() {
                     <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-bold text-slate-800">Pending Leave Request</h4>
-                      <p className="text-slate-500">Your leave request for 25 Aug 2026 is pending approval.</p>
+                      <p className="text-slate-500">Your leave request for {leaveRequests[0]?.startDate || 'upcoming date'} is pending approval.</p>
                     </div>
                   </div>
 
@@ -524,7 +712,11 @@ export default function DayflowDashboard() {
                     <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-bold text-slate-800">Attendance Reminder</h4>
-                      <p className="text-slate-500">Don't forget to mark your attendance today.</p>
+                      <p className="text-slate-500">
+                        {attendanceStatus === 'not-checked-in' 
+                          ? "Don't forget to mark your check-in today." 
+                          : "Check-in recorded! Remember to check out before leaving."}
+                      </p>
                     </div>
                   </div>
 
@@ -589,7 +781,30 @@ export default function DayflowDashboard() {
           </>
         )}
 
-        {/* 2. EMPLOYEE PROFILE MANAGEMENT  */}
+        {/* 2. LEAVE REQUESTS SCREEN */}
+        {currentPage === 'leaves' && (
+          <LeaveManagementView 
+            leaveStats={leaveStats}
+            leaveRequests={leaveRequests}
+            onOpenApplyModal={() => setShowLeaveModal(true)}
+            onBack={() => handleNavigate('dashboard')}
+          />
+        )}
+
+        {/* 3. ATTENDANCE MANAGEMENT TAB VIEW */}
+        {currentPage === 'attendance' && (
+          <AttendanceTrackingView 
+            status={attendanceStatus}
+            checkInTime={checkInTime}
+            checkOutTime={checkOutTime}
+            totalHours={totalWorkHours}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleCheckOut}
+            onBack={() => handleNavigate('dashboard')}
+          />
+        )}
+
+        {/* 4. PROFILE MANAGEMENT (3.3.1 & 3.3.2) */}
         {currentPage === 'profile' && (
           <FullProfileManagementView 
             userProfile={userProfile}
@@ -598,7 +813,7 @@ export default function DayflowDashboard() {
           />
         )}
 
-        {/* 3. CHANGE PASSWORD SCREEN */}
+        {/* 5. CHANGE PASSWORD VIEW */}
         {currentPage === 'password' && (
           <ChangePasswordView 
             currentActualPassword={currentAccountPassword} 
@@ -611,7 +826,7 @@ export default function DayflowDashboard() {
         )}
 
         {/* Generic Sub-views */}
-        {currentPage !== 'dashboard' && currentPage !== 'profile' && currentPage !== 'password' && (
+        {currentPage !== 'dashboard' && currentPage !== 'profile' && currentPage !== 'password' && currentPage !== 'attendance' && currentPage !== 'leaves' && (
           <GenericPageView 
             title={currentPage.toUpperCase()} 
             desc={`Management console for ${currentPage}.`}
@@ -627,19 +842,113 @@ export default function DayflowDashboard() {
         </div>
       </main>
 
-      {/* ===================== 3.3.2 EDIT PROFILE MODAL (RESTRICTED PERMISSION) ===================== */}
+      {/* ===================== APPLY FOR LEAVE MODAL ===================== */}
+      {showLeaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800">Apply for Leave</h3>
+                  <p className="text-[11px] text-slate-400">Submit a new leave request to HR</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowLeaveModal(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleApplyLeave} className="p-6 space-y-4">
+              {/* 1. Leave Type (Paid, Sick, Unpaid) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Leave Type</label>
+                <select
+                  value={leaveForm.type}
+                  onChange={(e) => setLeaveForm({ ...leaveForm, type: e.target.value })}
+                  className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 bg-white"
+                  required
+                >
+                  <option value="Paid">Paid Leave (Casual / Vacation)</option>
+                  <option value="Sick">Sick Leave (Medical)</option>
+                  <option value="Unpaid">Unpaid Leave (Loss of Pay)</option>
+                </select>
+              </div>
+
+              {/* 2. Date Range */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1.5">Start Date</label>
+                  <input
+                    type="date"
+                    value={leaveForm.startDate}
+                    onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1.5">End Date</label>
+                  <input
+                    type="date"
+                    value={leaveForm.endDate}
+                    onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* 3. Remarks */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Remarks / Reason</label>
+                <textarea
+                  rows={3}
+                  value={leaveForm.remarks}
+                  onChange={(e) => setLeaveForm({ ...leaveForm, remarks: e.target.value })}
+                  placeholder="Provide reason for leave (e.g. Doctor appointment, family function...)"
+                  className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 resize-none"
+                  required
+                />
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowLeaveModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-200 transition cursor-pointer"
+                >
+                  Submit Application
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== 3.3.2 EDIT PROFILE MODAL ===================== */}
       {showEditPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden max-h-[90vh] flex flex-col">
-            
-            {/* Modal Header */}
             <div className="flex justify-between items-center px-4 sm:px-6 py-3.5 border-b border-slate-100 bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
                   <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800">Edit Profile</h3>
+                  <h3 className="text-sm font-bold text-slate-800">Edit Profile (3.3.2)</h3>
                   <p className="text-[10px] text-slate-400">Employees can only update address, phone & profile picture</p>
                 </div>
               </div>
@@ -651,10 +960,7 @@ export default function DayflowDashboard() {
               </button>
             </div>
 
-            {/* Modal Form */}
             <form onSubmit={handleSaveProfile} className="p-4 sm:p-6 space-y-4 overflow-y-auto">
-              
-              {/* Photo Upload Section */}
               <div className="flex items-center gap-3 sm:gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                 <div className="relative group shrink-0">
                   <img
@@ -690,10 +996,9 @@ export default function DayflowDashboard() {
                 </div>
               </div>
 
-              {/* Editable Fields Section */}
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block text-slate-600 font-semibold mb-1">Phone Number</label>
+                  <label className="block text-slate-600 font-semibold mb-1">Phone Number (Editable)</label>
                   <input
                     type="text"
                     value={editFormData.phone}
@@ -715,7 +1020,7 @@ export default function DayflowDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 font-semibold mb-1">Emergency Contact</label>
+                  <label className="block text-slate-600 font-semibold mb-1">Emergency Contact (Editable)</label>
                   <input
                     type="text"
                     value={editFormData.emergencyContact}
@@ -726,26 +1031,13 @@ export default function DayflowDashboard() {
                 </div>
               </div>
 
-              {/* Locked Notice & Fields */}
               <div className="pt-2">
                 <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2 text-amber-700 text-[11px] font-medium mb-3">
                   <ShieldAlert className="w-4 h-4 shrink-0" />
                   <span>Name, Email, Job Details & Salary are restricted and can only be altered by HR.</span>
                 </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Full Name (Locked)</span>
-                    <input type="text" value={userProfile.name} disabled className="w-full p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-400 cursor-not-allowed" />
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Employee ID (Locked)</span>
-                    <input type="text" value={userProfile.empId} disabled className="w-full p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-400 cursor-not-allowed" />
-                  </div>
-                </div>
               </div>
 
-              {/* Modal Actions */}
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button
                   type="button"
@@ -769,6 +1061,183 @@ export default function DayflowDashboard() {
   );
 }
 
+/* ----------------- LEAVE MANAGEMENT VIEW ----------------- */
+
+function LeaveManagementView({ leaveStats, leaveRequests, onOpenApplyModal, onBack }) {
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-600" /> Leave Management
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">Apply for paid, sick, or unpaid leave and track status in real-time.</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenApplyModal}
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" /> Apply for Leave
+          </button>
+          <button
+            onClick={onBack}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold transition cursor-pointer"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+
+      {/* Leave Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <LeaveStatCard title="Total Leaves" count={leaveStats.total} sub="days" bg="bg-blue-50/60" text="text-blue-600" />
+        <LeaveStatCard title="Used Leaves" count={leaveStats.used} sub="days" bg="bg-slate-50" text="text-slate-800" />
+        <LeaveStatCard title="Pending Approvals" count={leaveStats.pending} sub="requests" bg="bg-amber-50/60" text="text-amber-600" />
+        <LeaveStatCard title="Remaining Balance" count={leaveStats.remaining} sub="days" bg="bg-emerald-50/60" text="text-emerald-600" />
+      </div>
+
+      {/* Leave History Table */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+        <h3 className="font-bold text-slate-800 text-sm mb-4">Leave Application Records</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-100 text-slate-400 font-semibold">
+                <th className="pb-3">Leave Type</th>
+                <th className="pb-3">Duration</th>
+                <th className="pb-3">Days</th>
+                <th className="pb-3">Remarks / Reason</th>
+                <th className="pb-3">Applied Date</th>
+                <th className="pb-3 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {leaveRequests.map((req) => (
+                <tr key={req.id} className="hover:bg-slate-50/60 transition">
+                  <td className="py-3.5 font-bold text-slate-800">{req.type}</td>
+                  <td className="py-3.5 text-slate-600">{req.startDate} to {req.endDate}</td>
+                  <td className="py-3.5 font-semibold text-slate-800">{req.days} Day(s)</td>
+                  <td className="py-3.5 text-slate-500 max-w-xs truncate">{req.remarks}</td>
+                  <td className="py-3.5 text-slate-400">{req.appliedOn}</td>
+                  <td className="py-3.5 text-right">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                      req.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {req.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ----------------- ROUND DAY ITEM ----------------- */
+
+function RoundDayItem({ day, date, status, isToday }) {
+  let circleBg = "bg-slate-50 text-slate-400 border border-slate-100";
+  let dotColor = "bg-transparent";
+
+  if (status === 'present') {
+    circleBg = "bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-xs";
+    dotColor = "bg-emerald-500";
+  } else if (status === 'half') {
+    circleBg = "bg-amber-50 text-amber-600 border border-amber-200 shadow-xs";
+    dotColor = "bg-amber-500";
+  } else if (status === 'today-pending') {
+    circleBg = "bg-blue-50 text-blue-600 border-2 border-blue-500 shadow-sm";
+    dotColor = "bg-blue-500";
+  } else if (status === 'weekend') {
+    circleBg = "bg-slate-100/70 text-slate-400 border border-slate-200";
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <span className="text-[11px] font-semibold text-slate-400">{day}</span>
+      <div className={`w-10 h-10 rounded-full flex flex-col items-center justify-center font-bold text-xs transition ${circleBg} ${isToday ? 'ring-2 ring-blue-500/20' : ''}`}>
+        <span>{date}</span>
+      </div>
+      <div className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+    </div>
+  );
+}
+
+/* ----------------- ATTENDANCE TRACKING VIEW ----------------- */
+
+function AttendanceTrackingView({ status, checkInTime, checkOutTime, totalHours, onCheckIn, onCheckOut, onBack }) {
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-blue-600" /> Attendance Management
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">Mark your daily check-in, check-out and monitor shift durations.</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {status === 'not-checked-in' && (
+            <button
+              onClick={onCheckIn}
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-200 transition cursor-pointer"
+            >
+              <LogIn className="w-4 h-4" /> Check In Now
+            </button>
+          )}
+
+          {status === 'checked-in' && (
+            <button
+              onClick={onCheckOut}
+              className="flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-200 transition animate-pulse cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" /> Check Out Now
+            </button>
+          )}
+
+          {status === 'checked-out' && (
+            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-xl text-xs font-bold">
+              ✓ Day Completed
+            </span>
+          )}
+
+          <button
+            onClick={onBack}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold transition cursor-pointer"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+          <span className="text-[11px] font-semibold text-slate-400 block mb-1">Check-in Time</span>
+          <h3 className="text-xl font-bold text-slate-800">{checkInTime}</h3>
+          <span className="text-[10px] text-emerald-600 font-semibold">{status !== 'not-checked-in' ? 'Recorded' : 'Awaiting punch'}</span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+          <span className="text-[11px] font-semibold text-slate-400 block mb-1">Check-out Time</span>
+          <h3 className="text-xl font-bold text-slate-800">{checkOutTime}</h3>
+          <span className="text-[10px] text-slate-400 font-semibold">{status === 'checked-out' ? 'Recorded' : 'Pending punch'}</span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+          <span className="text-[11px] font-semibold text-slate-400 block mb-1">Effective Working Hours</span>
+          <h3 className="text-xl font-black text-blue-600">{totalHours}</h3>
+          <span className="text-[10px] text-slate-400 font-semibold">Target: 08h 30m</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ----------------- 3.3.1 VIEW PROFILE FULL COMPONENT ----------------- */
 
 function FullProfileManagementView({ userProfile, onOpenEditPopup, onBack }) {
@@ -776,16 +1245,13 @@ function FullProfileManagementView({ userProfile, onOpenEditPopup, onBack }) {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Card */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
-          <div className="relative">
-            <img
-              src={userProfile.avatar}
-              alt={userProfile.name}
-              className="w-24 h-24 rounded-2xl object-cover ring-4 ring-blue-50 shadow-md"
-            />
-          </div>
+          <img
+            src={userProfile.avatar}
+            alt={userProfile.name}
+            className="w-24 h-24 rounded-2xl object-cover ring-4 ring-blue-50 shadow-md"
+          />
           <div>
             <div className="flex items-center justify-center sm:justify-start gap-2">
               <h2 className="text-xl font-bold text-slate-900">{userProfile.name}</h2>
@@ -803,7 +1269,7 @@ function FullProfileManagementView({ userProfile, onOpenEditPopup, onBack }) {
             onClick={onOpenEditPopup}
             className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition cursor-pointer"
           >
-            <Edit2 className="w-3.5 h-3.5" /> Edit Profile
+            <Edit2 className="w-3.5 h-3.5" /> Edit Profile (3.3.2)
           </button>
           <button
             onClick={onBack}
@@ -814,7 +1280,6 @@ function FullProfileManagementView({ userProfile, onOpenEditPopup, onBack }) {
         </div>
       </div>
 
-      {/* Navigation Sub-Tabs (3.3.1) */}
       <div className="flex border-b border-slate-200 space-x-2 overflow-x-auto pb-1">
         <TabButton active={activeTab === 'personal'} onClick={() => setActiveTab('personal')} icon={<User className="w-4 h-4" />} label="Personal Details" />
         <TabButton active={activeTab === 'job'} onClick={() => setActiveTab('job')} icon={<Briefcase className="w-4 h-4" />} label="Job Details" />
@@ -822,178 +1287,79 @@ function FullProfileManagementView({ userProfile, onOpenEditPopup, onBack }) {
         <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<FileCheck className="w-4 h-4" />} label="Documents" />
       </div>
 
-      {/* TAB CONTENT PANELS */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-        
-        {/* 1. Personal Details */}
         {activeTab === 'personal' && (
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-600" /> Personal Information
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
-              <InfoItem label="Full Name" value={userProfile.name} />
-              <InfoItem label="Email Address" value={userProfile.email} />
-              <InfoItem label="Mobile Number" value={userProfile.phone} highlight />
-              <InfoItem label="Date of Birth" value={userProfile.dob} />
-              <InfoItem label="Gender" value={userProfile.gender} />
-              <InfoItem label="Emergency Contact" value={userProfile.emergencyContact} highlight />
-              <div className="sm:col-span-2 lg:col-span-3">
-                <InfoItem label="Residential Address" value={userProfile.address} highlight />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
+            <InfoItem label="Full Name" value={userProfile.name} />
+            <InfoItem label="Email Address" value={userProfile.email} />
+            <InfoItem label="Mobile Number" value={userProfile.phone} highlight />
+            <InfoItem label="Date of Birth" value={userProfile.dob} />
+            <InfoItem label="Gender" value={userProfile.gender} />
+            <InfoItem label="Emergency Contact" value={userProfile.emergencyContact} highlight />
+            <div className="sm:col-span-2 lg:col-span-3">
+              <InfoItem label="Residential Address" value={userProfile.address} highlight />
             </div>
           </div>
         )}
 
-        {/* 2. Job Details */}
         {activeTab === 'job' && (
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-blue-600" /> Employment & Organization Details
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
-              <InfoItem label="Employee ID" value={userProfile.empId} />
-              <InfoItem label="Department" value={userProfile.department} />
-              <InfoItem label="Designation" value={userProfile.designation} />
-              <InfoItem label="Date of Joining" value={userProfile.doj} />
-              <InfoItem label="Employment Type" value={userProfile.employmentType} />
-              <InfoItem label="Work Location" value={userProfile.workLocation} />
-              <InfoItem label="Reporting Manager" value={userProfile.manager} />
-              <InfoItem label="Employment Status" value="Active (Permanent)" isBadge />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
+            <InfoItem label="Employee ID" value={userProfile.empId} />
+            <InfoItem label="Department" value={userProfile.department} />
+            <InfoItem label="Designation" value={userProfile.designation} />
+            <InfoItem label="Date of Joining" value={userProfile.doj} />
+            <InfoItem label="Employment Type" value={userProfile.employmentType} />
+            <InfoItem label="Work Location" value={userProfile.workLocation} />
+            <InfoItem label="Reporting Manager" value={userProfile.manager} />
+            <InfoItem label="Employment Status" value="Active (Permanent)" isBadge />
           </div>
         )}
 
-        {/* 3. Salary Structure */}
         {activeTab === 'salary' && (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-blue-600" /> Compensation & Breakdown
-              </h3>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
-                Annual CTC: {userProfile.salary.ctc}
-              </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5">
+              <h4 className="font-bold text-slate-700 pb-2 border-b border-slate-200">Earnings</h4>
+              <div className="flex justify-between"><span className="text-slate-500">Basic Pay</span><span className="font-semibold text-slate-800">{userProfile.salary.basic}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">HRA</span><span className="font-semibold text-slate-800">{userProfile.salary.hra}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Special Allowance</span><span className="font-semibold text-slate-800">{userProfile.salary.specialAllowance}</span></div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              {/* Earnings */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5">
-                <h4 className="font-bold text-slate-700 pb-2 border-b border-slate-200">Earnings</h4>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Basic Pay</span>
-                  <span className="font-semibold text-slate-800">{userProfile.salary.basic}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">House Rent Allowance (HRA)</span>
-                  <span className="font-semibold text-slate-800">{userProfile.salary.hra}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Special Allowance</span>
-                  <span className="font-semibold text-slate-800">{userProfile.salary.specialAllowance}</span>
-                </div>
-              </div>
-
-              {/* Deductions */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5">
-                <h4 className="font-bold text-slate-700 pb-2 border-b border-slate-200">Monthly Deductions</h4>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Provident Fund (PF)</span>
-                  <span className="font-semibold text-rose-600">- {userProfile.salary.pfDeduction}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Professional Tax (PT)</span>
-                  <span className="font-semibold text-rose-600">- {userProfile.salary.professionalTax}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t border-slate-200">
-                  <span className="font-bold text-slate-800">Net Monthly Salary (In-hand)</span>
-                  <span className="font-black text-emerald-600 text-sm">{userProfile.salary.netSalary}</span>
-                </div>
-              </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2.5">
+              <h4 className="font-bold text-slate-700 pb-2 border-b border-slate-200">Monthly Deductions</h4>
+              <div className="flex justify-between"><span className="text-slate-500">PF</span><span className="font-semibold text-rose-600">- {userProfile.salary.pfDeduction}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Professional Tax</span><span className="font-semibold text-rose-600">- {userProfile.salary.professionalTax}</span></div>
+              <div className="flex justify-between pt-2 border-t border-slate-200"><span className="font-bold text-slate-800">Net Take-Home</span><span className="font-black text-emerald-600 text-sm">{userProfile.salary.netSalary}</span></div>
             </div>
           </div>
         )}
 
-        {/* 4. Documents */}
         {activeTab === 'documents' && (
-          <div>
-            <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
-              <FileCheck className="w-4 h-4 text-blue-600" /> Uploaded & Verified Records
-            </h3>
-            
-            <div className="space-y-3">
-              {userProfile.documents.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px]">
-                      {doc.type}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-800 text-xs">{doc.name}</p>
-                      <p className="text-[10px] text-slate-400">Uploaded on {doc.date} • <span className="text-emerald-600 font-semibold">{doc.status}</span></p>
-                    </div>
+          <div className="space-y-3">
+            {userProfile.documents.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px]">{doc.type}</div>
+                  <div>
+                    <p className="font-semibold text-slate-800 text-xs">{doc.name}</p>
+                    <p className="text-[10px] text-slate-400">Uploaded {doc.date} • <span className="text-emerald-600 font-semibold">{doc.status}</span></p>
                   </div>
-
-                  <button 
-                    onClick={() => alert(`Downloading ${doc.name}...`)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Download
-                  </button>
                 </div>
-              ))}
-            </div>
+                <button onClick={() => alert(`Downloading ${doc.name}...`)} className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer">
+                  <Download className="w-3.5 h-3.5" /> Download
+                </button>
+              </div>
+            ))}
           </div>
         )}
-
       </div>
     </div>
   );
 }
 
-/* Helper Info Item Components */
-function InfoItem({ label, value, highlight, isBadge }) {
-  return (
-    <div>
-      <span className="text-slate-400 block mb-1 text-[11px] font-medium">{label}</span>
-      {isBadge ? (
-        <span className="bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded text-[10px]">
-          {value}
-        </span>
-      ) : (
-        <span className={`font-semibold ${highlight ? 'text-blue-700 font-bold' : 'text-slate-800'}`}>
-          {value}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function TabButton({ active, onClick, icon, label }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-        active 
-          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200' 
-          : 'text-slate-600 hover:bg-slate-100'
-      }`}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
-
-/* ----------------- CHANGE PASSWORD COMPONENT ----------------- */
+/* ----------------- CHANGE PASSWORD VIEW ----------------- */
 
 function ChangePasswordView({ currentActualPassword, onPasswordUpdated, onBack }) {
-  const [passData, setPassData] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
+  const [passData, setPassData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -1006,15 +1372,13 @@ function ChangePasswordView({ currentActualPassword, onPasswordUpdated, onBack }
     setSuccessMsg('');
 
     if (passData.oldPassword !== currentActualPassword) {
-      setErrorMsg('Current password is incorrect! (Default test password is: password123)');
+      setErrorMsg('Current password is incorrect! (Default: password123)');
       return;
     }
-
     if (passData.newPassword.length < 6) {
       setErrorMsg('New password must be at least 6 characters long.');
       return;
     }
-
     if (passData.newPassword !== passData.confirmPassword) {
       setErrorMsg('New password and Confirm password do not match.');
       return;
@@ -1030,106 +1394,46 @@ function ChangePasswordView({ currentActualPassword, onPasswordUpdated, onBack }
     <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-8 shadow-xs max-w-2xl">
       <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Lock className="w-5 h-5" />
-          </div>
+          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><Lock className="w-5 h-5" /></div>
           <div>
             <h2 className="text-lg font-bold text-slate-800">Change Password</h2>
             <p className="text-xs text-slate-400">Ensure your account uses a secure password</p>
           </div>
         </div>
-        <button 
-          onClick={onBack}
-          className="px-3 py-1.5 bg-blue-50 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-100 transition cursor-pointer"
-        >
-          ← Back
-        </button>
+        <button onClick={onBack} className="px-3 py-1.5 bg-blue-50 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-100 transition cursor-pointer">← Back</button>
       </div>
 
-      {errorMsg && (
-        <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-center gap-2 text-rose-600 text-xs font-semibold">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
-          <span>{errorMsg}</span>
-        </div>
-      )}
-
-      {successMsg && (
-        <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-2 text-emerald-600 text-xs font-semibold">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{successMsg}</span>
-        </div>
-      )}
+      {errorMsg && <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-xs font-semibold">{errorMsg}</div>}
+      {successMsg && <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 text-xs font-semibold">{successMsg}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Current Password</label>
           <div className="relative">
-            <input
-              type={showOld ? 'text' : 'password'}
-              value={passData.oldPassword}
-              onChange={(e) => setPassData({ ...passData, oldPassword: e.target.value })}
-              placeholder="Enter current password"
-              className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowOld(!showOld)}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+            <input type={showOld ? 'text' : 'password'} value={passData.oldPassword} onChange={(e) => setPassData({ ...passData, oldPassword: e.target.value })} className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" required />
+            <button type="button" onClick={() => setShowOld(!showOld)} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer">{showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">New Password</label>
           <div className="relative">
-            <input
-              type={showNew ? 'text' : 'password'}
-              value={passData.newPassword}
-              onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
-              placeholder="Enter new password (min 6 chars)"
-              className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+            <input type={showNew ? 'text' : 'password'} value={passData.newPassword} onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })} className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" required />
+            <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer">{showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5">Confirm New Password</label>
           <div className="relative">
-            <input
-              type={showConfirm ? 'text' : 'password'}
-              value={passData.confirmPassword}
-              onChange={(e) => setPassData({ ...passData, confirmPassword: e.target.value })}
-              placeholder="Re-type new password"
-              className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+            <input type={showConfirm ? 'text' : 'password'} value={passData.confirmPassword} onChange={(e) => setPassData({ ...passData, confirmPassword: e.target.value })} className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" required />
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer">{showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />} </button>
           </div>
         </div>
 
         <div className="pt-2">
-          <button
-            type="submit"
-            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-200 transition flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <KeyRound className="w-4 h-4" /> Update Password
+          <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-200 transition cursor-pointer">
+            Update Password
           </button>
         </div>
       </form>
@@ -1137,7 +1441,7 @@ function ChangePasswordView({ currentActualPassword, onPasswordUpdated, onBack }
   );
 }
 
-/* ----------------- HELPER COMPONENTS ----------------- */
+/* ----------------- SUB & HELPER COMPONENTS ----------------- */
 
 function GenericPageView({ title, desc, onBack }) {
   return (
@@ -1147,12 +1451,7 @@ function GenericPageView({ title, desc, onBack }) {
           <h2 className="text-lg sm:text-xl font-bold text-slate-800">{title}</h2>
           <p className="text-xs text-slate-400 mt-1">{desc}</p>
         </div>
-        <button 
-          onClick={onBack}
-          className="px-3 py-1.5 bg-blue-50 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-100 transition cursor-pointer"
-        >
-          ← Back to Dashboard
-        </button>
+        <button onClick={onBack} className="px-3 py-1.5 bg-blue-50 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-100 transition cursor-pointer">← Back to Dashboard</button>
       </div>
       <div className="py-12 text-center text-slate-400 text-xs">Section under active development</div>
     </div>
@@ -1161,14 +1460,7 @@ function GenericPageView({ title, desc, onBack }) {
 
 function NavItem({ icon, label, active, onClick }) {
   return (
-    <button 
-      onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold w-full transition cursor-pointer ${
-        active 
-          ? 'bg-blue-50 text-blue-600' 
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-      }`}
-    >
+    <button onClick={onClick} className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold w-full transition cursor-pointer ${active ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}>
       {icon}
       <span>{label}</span>
     </button>
@@ -1179,16 +1471,11 @@ function QuickActionCard({ icon, iconBg, title, desc, btnText, btnColor, onClick
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col justify-between h-40">
       <div>
-        <div className={`w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center mb-2.5 shadow-xs`}>
-          {icon}
-        </div>
+        <div className={`w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center mb-2.5 shadow-xs`}>{icon}</div>
         <h4 className="font-bold text-slate-800 text-sm mb-0.5">{title}</h4>
         <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">{desc}</p>
       </div>
-      <button 
-        onClick={onClick}
-        className={`flex items-center gap-1 text-xs font-bold ${btnColor} py-1 px-2 rounded-lg w-fit transition cursor-pointer`}
-      >
+      <button onClick={onClick} className={`flex items-center gap-1 text-xs font-bold ${btnColor} py-1 px-2 rounded-lg w-fit transition cursor-pointer`}>
         {btnText} <ArrowRight className="w-3.5 h-3.5" />
       </button>
     </div>
@@ -1207,36 +1494,30 @@ function ActivityItem({ icon, title, time }) {
   );
 }
 
-function DayCard({ day, date, status, active, isHalfDay }) {
-  return (
-    <div
-      className={`border rounded-xl p-1.5 sm:p-2 flex flex-col items-center justify-center ${
-        active ? 'border-blue-500 bg-blue-50/30' : 'border-slate-200 bg-white'
-      }`}
-    >
-      <span className="text-[10px] text-slate-400 font-medium">{day}</span>
-      <span className={`text-xs sm:text-sm font-bold my-0.5 ${active ? 'text-blue-600' : 'text-slate-800'}`}>{date}</span>
-      <span
-        className={`text-[8px] sm:text-[9px] font-bold px-1 rounded ${
-          status === 'Present'
-            ? 'text-emerald-600 bg-emerald-50'
-            : isHalfDay
-            ? 'text-amber-600 bg-amber-50'
-            : 'text-slate-400'
-        }`}
-      >
-        {status}
-      </span>
-    </div>
-  );
-}
-
 function LeaveStatCard({ title, count, sub, bg, text }) {
   return (
-    <div className={`${bg} rounded-xl p-2 sm:p-2.5 text-center border border-slate-100`}>
+    <div className={`${bg} rounded-2xl p-2 sm:p-2.5 text-center border border-slate-100`}>
       <span className="text-[9px] font-semibold text-slate-500 block leading-tight mb-0.5">{title}</span>
       <span className={`text-base sm:text-xl font-black ${text}`}>{count}</span>
       <span className="text-[10px] text-slate-400 ml-1">{sub}</span>
     </div>
+  );
+}
+
+function InfoItem({ label, value, highlight, isBadge }) {
+  return (
+    <div>
+      <span className="text-slate-400 block mb-1 text-[11px] font-medium">{label}</span>
+      {isBadge ? <span className="bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded text-[10px]">{value}</span> : <span className={`font-semibold ${highlight ? 'text-blue-700 font-bold' : 'text-slate-800'}`}>{value}</span>}
+    </div>
+  );
+}
+
+function TabButton({ active, onClick, icon, label }) {
+  return (
+    <button onClick={onClick} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${active ? 'bg-blue-600 text-white shadow-sm shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'}`}>
+      {icon}
+      <span>{label}</span>
+    </button>
   );
 }
