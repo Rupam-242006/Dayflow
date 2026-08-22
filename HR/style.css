@@ -1,0 +1,50 @@
+/* Custom scrollbar for a native enterprise feel */
+::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+}
+::-webkit-scrollbar-track { 
+    background: transparent; 
+}
+::-webkit-scrollbar-thumb { 
+    background: #cbd5e1; 
+    border-radius: 3px; 
+}
+::-webkit-scrollbar-thumb:hover { 
+    background: #94a3b8; 
+}
+
+/* Sidebar Employee Button States */
+.employee-btn {
+    /* Default inactive state styles */
+    color: #cbd5e1; /* slate-300 */
+}
+.employee-btn:hover:not(.active) {
+    background-color: #334155; /* slate-700 */
+}
+.employee-btn .avatar {
+    background-color: #475569; /* slate-600 */
+    color: #e2e8f0; /* slate-200 */
+}
+.employee-btn .emp-name {
+    color: #e2e8f0; /* slate-200 */
+}
+.employee-btn .emp-role {
+    color: #94a3b8; /* slate-400 */
+}
+
+/* Sidebar Employee Button - ACTIVE State */
+.employee-btn.active {
+    background-color: #2563eb; /* blue-600 */
+    color: #ffffff;
+}
+.employee-btn.active .avatar {
+    background-color: #60a5fa; /* blue-400 */
+    color: #ffffff;
+}
+.employee-btn.active .emp-name {
+    color: #ffffff;
+}
+.employee-btn.active .emp-role {
+    color: #bfdbfe; /* blue-200 */
+}
