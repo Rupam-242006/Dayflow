@@ -1,122 +1,82 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React from 'react';
+import {
+  LayoutDashboard,
+  User,
+  CalendarCheck,
+  FileText,
+  DollarSign,
+  KeyRound,
+  Settings,
+  LogOut,
+  HelpCircle,
+} from 'lucide-react';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function Sidebar() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 fixed h-full z-10 select-none">
+      <div>
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-3 py-4 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
+            <span className="text-xl">👥</span>
+          </div>
+          <div>
+            <h1 className="font-bold text-lg leading-tight text-slate-900 tracking-tight">Dayflow</h1>
+            <p className="text-[11px] font-semibold text-slate-400 tracking-wider">HRMS</p>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
+
+        {/* Active Dashboard Link */}
+        <div className="bg-blue-50 text-blue-600 rounded-xl px-4 py-2.5 flex items-center gap-3 font-medium text-sm mb-6 cursor-pointer">
+          <LayoutDashboard className="w-4 h-4 text-blue-600" />
+          <span>Dashboard</span>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+
+        {/* Main Section */}
+        <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Main</p>
+        <nav className="space-y-1 mb-6">
+          <NavItem icon={<User className="w-4 h-4" />} label="Profile" />
+          <NavItem icon={<CalendarCheck className="w-4 h-4" />} label="Attendance" />
+          <NavItem icon={<FileText className="w-4 h-4" />} label="Leave Requests" />
+          <NavItem icon={<DollarSign className="w-4 h-4" />} label="Payroll" />
+        </nav>
+
+        {/* Account Section */}
+        <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-3 mb-2">Account</p>
+        <nav className="space-y-1">
+          <NavItem icon={<KeyRound className="w-4 h-4" />} label="Change Password" />
+          <NavItem icon={<Settings className="w-4 h-4" />} label="Settings" />
+        </nav>
+      </div>
+
+      {/* Footer Support & Logout */}
+      <div>
+        <button className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl w-full transition mb-4">
+          <LogOut className="w-4 h-4" />
+          <span>Logout</span>
         </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-3.5 flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+            <HelpCircle className="w-4 h-4" />
+          </div>
+          <div className="text-xs">
+            <p className="font-semibold text-slate-800">Need Help?</p>
+            <a href="#support" className="text-blue-600 hover:underline font-medium">Contact HR Support</a>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <p className="text-[11px] text-center text-slate-400 font-medium">© 2026 Dayflow HRMS</p>
+      </div>
+    </aside>
+  );
 }
 
-export default App
+function NavItem({ icon, label }) {
+  return (
+    <button className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl text-xs font-semibold w-full transition">
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+}
