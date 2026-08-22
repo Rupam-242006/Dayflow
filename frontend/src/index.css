@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+:root {
+	color: #3f3a32;
+	background: #fbf7ed;
+	font-family: Georgia, 'Times New Roman', serif;
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	background: #fbf7ed;
+}
+
+body::before {
+	position: fixed;
+	inset: -35%;
+	z-index: -1;
+	content: '';
+	pointer-events: none;
+	background:
+		repeating-linear-gradient(112deg, transparent 0 11rem, rgba(220, 172, 106, 0.08) 11.1rem 11.45rem, transparent 11.55rem 23rem),
+		linear-gradient(128deg, rgba(255, 255, 255, 0.9), transparent 42%, rgba(239, 215, 177, 0.45) 68%, rgba(255, 255, 255, 0.72));
+	animation: cream-drift 24s ease-in-out infinite alternate;
+}
+
+@keyframes cream-drift {
+	from {
+		transform: translate3d(-2%, -1%, 0) rotate(-1deg) scale(1.02);
+	}
+
+	to {
+		transform: translate3d(2%, 1%, 0) rotate(1deg) scale(1.06);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	body::before {
+		animation: none;
+	}
+}

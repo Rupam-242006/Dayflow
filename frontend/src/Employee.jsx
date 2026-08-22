@@ -269,7 +269,7 @@ export default function DayflowDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] text-slate-800 font-sans relative">
+    <div className="dayflow-shell flex min-h-screen bg-transparent text-slate-800 font-sans relative">
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
         <div 
