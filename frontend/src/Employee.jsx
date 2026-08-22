@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   LayoutDashboard,
   User,
@@ -44,14 +44,36 @@ export default function DayflowDashboard() {
   // Security Password
   const [currentAccountPassword, setCurrentAccountPassword] = useState('password123');
 
-  // Attendance State
-  const [attendanceStatus, setAttendanceStatus] = useState('not-checked-in');
+  // Real-time Attendance State
+  const [attendanceStatus, setAttendanceStatus] = useState('not-checked-in'); // 'not-checked-in' | 'checked-in' | 'checked-out'
   const [checkInTime, setCheckInTime] = useState('--:-- --');
   const [checkOutTime, setCheckOutTime] = useState('--:-- --');
   const [totalWorkHours, setTotalWorkHours] = useState('00h 00m');
+  const [workPercentage, setWorkPercentage] = useState(0);
   const [checkInTimestamp, setCheckInTimestamp] = useState(null);
 
-  // Leave Management State
+  // Live Timer during checked-in state
+  useEffect(() => {
+    let interval = null;
+    if (attendanceStatus === 'checked-in' && checkInTimestamp) {
+      interval = setInterval(() => {
+        const now = new Date();
+        const diffMs = now - checkInTimestamp;
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        const diffHrs = Math.floor(diffMins / 60);
+        const remMins = diffMins % 60;
+
+        setTotalWorkHours(`${String(diffHrs).padStart(2, '0')}h ${String(remMins).padStart(2, '0')}m`);
+
+        // Calculate against 9 hours (540 mins)
+        const percent = Math.min(100, Math.round((diffMins / 540) * 100));
+        setWorkPercentage(percent);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [attendanceStatus, checkInTimestamp]);
+
+  // Leave State
   const [leaveStats, setLeaveStats] = useState({
     total: 18,
     used: 6,
@@ -82,7 +104,6 @@ export default function DayflowDashboard() {
     }
   ]);
 
-  // Leave Form State
   const [leaveForm, setLeaveForm] = useState({
     type: 'Paid',
     startDate: '',
@@ -98,11 +119,11 @@ export default function DayflowDashboard() {
     dob: '15 Aug 2000',
     gender: 'Male',
     address: 'Plot 42, Tech Park Residency, Bhubaneswar, Odisha',
-    emergencyContact: '+91 91234 56789 (Father)',
+    emergencyContact: '+91 91234 56789',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     empId: 'EMP00123',
     department: 'Engineering',
-    designation: 'Frontend Developer',
+    designation: 'Supervisor',
     doj: '01 Jan 2024',
     manager: 'Rohit Sharma',
     employmentType: 'Full-time (Permanent)',
@@ -138,9 +159,10 @@ export default function DayflowDashboard() {
     setCheckInTime(timeString);
     setCheckInTimestamp(now);
     setAttendanceStatus('checked-in');
+    setWorkPercentage(1);
   };
 
-  // Check Out Handler
+  // Check Out Handler (Accurate 9 Hours Calculation)
   const handleCheckOut = () => {
     const now = new Date();
     const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -149,15 +171,19 @@ export default function DayflowDashboard() {
 
     if (checkInTimestamp) {
       const diffMs = now - checkInTimestamp;
-      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      setTotalWorkHours(`${String(diffHrs).padStart(2, '0')}h ${String(diffMins).padStart(2, '0')}m`);
-    } else {
-      setTotalWorkHours('08h 30m');
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      const diffHrs = Math.floor(diffMins / 60);
+      const remMins = diffMins % 60;
+
+      setTotalWorkHours(`${String(diffHrs).padStart(2, '0')}h ${String(remMins).padStart(2, '0')}m`);
+      
+      // Calculate true percentage of 9 hours (540 mins)
+      const calculatedPercentage = Math.min(100, Math.round((diffMins / 540) * 100));
+      setWorkPercentage(calculatedPercentage);
     }
   };
 
-  // Handle Leave Submission
+  // Leave Submit
   const handleApplyLeave = (e) => {
     e.preventDefault();
     if (!leaveForm.startDate || !leaveForm.endDate) {
@@ -366,7 +392,6 @@ export default function DayflowDashboard() {
           </button>
 
           <div className="flex items-center gap-3 ml-auto">
-            {/* Quick Header Check-in / Check-out Button */}
             {attendanceStatus === 'not-checked-in' && (
               <button
                 onClick={handleCheckIn}
@@ -387,7 +412,7 @@ export default function DayflowDashboard() {
 
             {attendanceStatus === 'checked-out' && (
               <span className="bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Completed
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Day Completed
               </span>
             )}
 
@@ -572,7 +597,7 @@ export default function DayflowDashboard() {
               </div>
             </div>
 
-            {/* Row 2: Attendance Overview & Leave Summary */}
+            {/* Row 2: Attendance Overview (Dynamic Live Calculation) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-6">
               <div className="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs">
                 <div className="flex justify-between items-center mb-6">
@@ -602,6 +627,7 @@ export default function DayflowDashboard() {
                   </div>
                 </div>
 
+                {/* Real-time Dynamic Progress Dial */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-100 pt-4 gap-4 text-xs">
                   <div className="flex items-center gap-3.5">
                     <div className="relative w-12 h-12 flex items-center justify-center">
@@ -611,17 +637,17 @@ export default function DayflowDashboard() {
                           cx="24"
                           cy="24"
                           r="20"
-                          stroke={attendanceStatus === 'checked-out' ? '#10b981' : '#2563eb'}
+                          stroke={workPercentage >= 100 ? '#10b981' : '#2563eb'}
                           strokeWidth="4"
                           strokeDasharray="125.6"
-                          strokeDashoffset={125.6 - (125.6 * (attendanceStatus === 'checked-out' ? 100 : attendanceStatus === 'checked-in' ? 45 : 0)) / 100}
+                          strokeDashoffset={125.6 - (125.6 * workPercentage) / 100}
                           strokeLinecap="round"
                           fill="transparent"
                           className="transition-all duration-700 ease-out"
                         />
                       </svg>
                       <span className="absolute text-[10px] font-black text-slate-700">
-                        {attendanceStatus === 'checked-out' ? '100%' : attendanceStatus === 'checked-in' ? '45%' : '0%'}
+                        {workPercentage}%
                       </span>
                     </div>
 
@@ -657,7 +683,7 @@ export default function DayflowDashboard() {
                     <h3 className="font-bold text-slate-800 text-sm sm:text-base">Leave Summary</h3>
                     <button 
                       onClick={() => setShowLeaveModal(true)} 
-                      className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                     >
                       <PlusCircle className="w-3.5 h-3.5" /> Apply
                     </button>
@@ -715,7 +741,7 @@ export default function DayflowDashboard() {
                       <p className="text-slate-500">
                         {attendanceStatus === 'not-checked-in' 
                           ? "Don't forget to mark your check-in today." 
-                          : "Check-in recorded! Remember to check out before leaving."}
+                          : "Check-in recorded! Shift timer running."}
                       </p>
                     </div>
                   </div>
@@ -798,13 +824,14 @@ export default function DayflowDashboard() {
             checkInTime={checkInTime}
             checkOutTime={checkOutTime}
             totalHours={totalWorkHours}
+            workPercentage={workPercentage}
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
             onBack={() => handleNavigate('dashboard')}
           />
         )}
 
-        {/* 4. PROFILE MANAGEMENT (3.3.1 & 3.3.2) */}
+        {/* 4. PROFILE MANAGEMENT */}
         {currentPage === 'profile' && (
           <FullProfileManagementView 
             userProfile={userProfile}
@@ -865,7 +892,6 @@ export default function DayflowDashboard() {
             </div>
 
             <form onSubmit={handleApplyLeave} className="p-6 space-y-4">
-              {/* 1. Leave Type (Paid, Sick, Unpaid) */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Leave Type</label>
                 <select
@@ -880,7 +906,6 @@ export default function DayflowDashboard() {
                 </select>
               </div>
 
-              {/* 2. Date Range */}
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="block font-semibold text-slate-600 mb-1.5">Start Date</label>
@@ -904,20 +929,18 @@ export default function DayflowDashboard() {
                 </div>
               </div>
 
-              {/* 3. Remarks */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Remarks / Reason</label>
                 <textarea
                   rows={3}
                   value={leaveForm.remarks}
                   onChange={(e) => setLeaveForm({ ...leaveForm, remarks: e.target.value })}
-                  placeholder="Provide reason for leave (e.g. Doctor appointment, family function...)"
+                  placeholder="Provide reason for leave..."
                   className="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 resize-none"
                   required
                 />
               </div>
 
-              {/* Modal Buttons */}
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
@@ -1090,7 +1113,6 @@ function LeaveManagementView({ leaveStats, leaveRequests, onOpenApplyModal, onBa
         </div>
       </div>
 
-      {/* Leave Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <LeaveStatCard title="Total Leaves" count={leaveStats.total} sub="days" bg="bg-blue-50/60" text="text-blue-600" />
         <LeaveStatCard title="Used Leaves" count={leaveStats.used} sub="days" bg="bg-slate-50" text="text-slate-800" />
@@ -1098,7 +1120,6 @@ function LeaveManagementView({ leaveStats, leaveRequests, onOpenApplyModal, onBa
         <LeaveStatCard title="Remaining Balance" count={leaveStats.remaining} sub="days" bg="bg-emerald-50/60" text="text-emerald-600" />
       </div>
 
-      {/* Leave History Table */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
         <h3 className="font-bold text-slate-800 text-sm mb-4">Leave Application Records</h3>
         <div className="overflow-x-auto">
@@ -1170,7 +1191,7 @@ function RoundDayItem({ day, date, status, isToday }) {
 
 /* ----------------- ATTENDANCE TRACKING VIEW ----------------- */
 
-function AttendanceTrackingView({ status, checkInTime, checkOutTime, totalHours, onCheckIn, onCheckOut, onBack }) {
+function AttendanceTrackingView({ status, checkInTime, checkOutTime, totalHours, workPercentage, onCheckIn, onCheckOut, onBack }) {
   return (
     <div className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
@@ -1229,9 +1250,9 @@ function AttendanceTrackingView({ status, checkInTime, checkOutTime, totalHours,
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-400 block mb-1">Effective Working Hours</span>
+          <span className="text-[11px] font-semibold text-slate-400 block mb-1">Effective Working Hours ({workPercentage}%)</span>
           <h3 className="text-xl font-black text-blue-600">{totalHours}</h3>
-          <span className="text-[10px] text-slate-400 font-semibold">Target: 08h 30m</span>
+          <span className="text-[10px] text-slate-400 font-semibold">Target: 09h 00m</span>
         </div>
       </div>
     </div>
