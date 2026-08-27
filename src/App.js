@@ -1,12 +1,20 @@
 import React from 'react';
-import Login from './Login'; 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Login from './Login';
+import EmployeeDashboard from './EmployeeDashboard';
 
-function App() {
+const App = () => {
   return (
-    <div>
-      <Login />
-    </div>
+    <Router>
+      <Routes>
+        {/* The default page is your Login screen */}
+        <Route path="/" element={<Login />} />
+        
+        {/* The dashboard page it redirects to */}
+        <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;

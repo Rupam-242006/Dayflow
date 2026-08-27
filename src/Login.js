@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { supabase } from './supabaseClient'; // Ensure this file exists in your src folder
+import { useNavigate } from 'react-router-dom'; // ADDED THIS
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate(); // ADDED THIS
   
   const [formData, setFormData] = useState({
     employeeId: '',
@@ -17,14 +19,12 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Made the function async to handle Supabase network requests
   const handleSubmit = async (e) => { 
     e.preventDefault();
     setError('');
     setMessage('');
 
     if (isLogin) {
-      // 3.1.2 REAL SIGN IN LOGIC (Supabase)
       if (formData.email === '' || formData.password === '') {
         setError('Please enter both email and password.');
         return;
@@ -36,16 +36,20 @@ const Login = () => {
       });
 
       if (error) {
-        setError(error.message); // Displays actual Supabase errors (e.g., wrong password)
+        setError(error.message); 
       } else {
-        // Retrieve the role we saved during Sign Up
         const userRole = data.user?.user_metadata?.role || 'Employee';
         alert(`Logged in successfully! Redirecting to ${userRole === 'HR' ? 'HR' : 'Employee'} Dashboard...`);
-        window.location.href = userRole === 'HR' ? '/HR/index.html' : '/Emp/suraj.html';
+        
+        // FIX: Using React Router to navigate safely inside Vercel
+        if (userRole === 'HR') {
+          navigate('/hr-dashboard'); 
+        } else {
+          navigate('/employee-dashboard');
+        }
       }
       
     } else {
-      // 3.1.1 REAL SIGN UP LOGIC (Supabase)
       if (formData.password.length < 8) {
         setError('Security Rule: Password must be at least 8 characters long.');
         return;
@@ -59,7 +63,7 @@ const Login = () => {
         email: formData.email,
         password: formData.password,
         options: {
-          data: { // Saves custom HRMS fields to the user's Supabase profile
+          data: { 
             employee_id: formData.employeeId,
             role: formData.role
           }
@@ -75,7 +79,6 @@ const Login = () => {
     }
   };
 
-  // Basic inline styles for a quick, clean hackathon UI
   const styles = {
     container: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f4f7f6', fontFamily: 'sans-serif' },
     card: { backgroundColor: 'white', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' },
