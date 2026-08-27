@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="logo-box">
+          <i class="fa-solid fa-shapes"></i>
+          <span>HRMS</span>
+        </div>
+        <nav class="nav-icons">
+          <button class="nav-item active" data-view="dashboard" title="Dashboard"><i class="fa-solid fa-house"></i></button>
+          <button class="nav-item" data-view="employees" title="Employees & Payroll"><i class="fa-solid fa-users"></i></button>
+          <button class="nav-item" data-view="attendance" title="Attendance Sheet"><i class="fa-regular fa-calendar-days"></i></button>
+          <button class="nav-item" data-view="documents" title="Documents"><i class="fa-regular fa-folder-open"></i></button>
+        </nav>
+      </div>
+      
+      <div class="sidebar-bottom">
+        <button class="nav-item" data-view="help" title="Help Desk"><i class="fa-regular fa-circle-question"></i></button>
+        <button class="nav-item" data-view="settings" title="Settings"><i class="fa-solid fa-gear"></i></button>
+        <button class="nav-item logout-btn" id="sidebarLogout" title="Logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+      </div>
+    </aside>
+
+    <!-- MAIN APP AREA -->
+    <main class="main-content">
+      
+      <!-- TOP NAVBAR -->
+      <header class="topbar">
+        <div class="search-container">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="globalSearch" placeholder="Search employees, payroll, tickets..." autocomplete="off" />
+            <button id="clearSearchBtn" class="clear-search-btn">&times;</button>
+          </div>
+          <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="date-badge" id="dateBadge" title="Live System Date">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="currentDate">Loading date...</span>
+          </div>
+
+          <div class="popover-wrapper">
+            <button class="icon-action-btn" id="msgToggleBtn" title="Inbox Messages">
+              <i class="fa-regular fa-message"></i>
+              <span class="badge-dot" id="msgDot"></span>
+            </button>
+            <div class="dropdown-panel" id="msgPanel">
+              <div class="panel-header">
+                <h4>Messages (<span id="msgCount">3</span>)</h4>
+                <button class="panel-action-link" id="markMsgsRead">Mark all read</button>
+              </div>
+              <div class="panel-body" id="msgListContainer"></div>
+            </div>
+          </div>
+
+          <div class="popover-wrapper">
+            <button class="icon-action-btn" id="notifToggleBtn" title="Notifications">
+              <i class="fa-regular fa-bell"></i>
+              <span class="badge-dot" id="notifDot"></span>
+            </button>
+            <div class="dropdown-panel" id="notifPanel">
+              <div class="panel-header">
+                <h4>Notifications (<span id="notifCount">3</span>)</h4>
+                <button class="panel-action-link" id="markNotifsRead">Mark all read</button>
+              </div>
+              <div class="panel-body" id="notifListContainer"></div>
+            </div>
+          </div>
+
+          <div class="top-profile" id="topProfileBtn" title="Click to view/edit profile">
+            <div class="avatar-sm" id="topAvatarInitial">R</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIEWS CONTAINER -->
+      <div id="viewsContainer">
+
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="app-view active">
+          <div class="page-header">
+            <h1>Human Resource</h1>
+            <p>Welcome back! Here is your daily HR operations overview.</p>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="grid-col col-left">
+              <div class="card profile-card">
+                <div class="profile-header">
+                  <div class="avatar-large" id="profileAvatarLarge">
+                    <i class="fa-solid fa-user-tie"></i>
+                  </div>
+                  <div class="profile-meta">
+                    <div class="name-edit-row">
+                      <h3 id="employeeName">Rahul Sharma</h3>
+                      <button class="btn-edit" id="btnEditProfile"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
+                    </div>
+                    <span class="role-badge" id="employeeRole">HR Manager (Admin)</span>
+                  </div>
+                </div>
+                
+                <div class="profile-details">
+                  <div class="detail-item">
+                    <i class="fa-regular fa-envelope"></i>
+                    <span id="employeeEmail">rahul.hr@company.com</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fa-solid fa-id-badge"></i>
+                    <span id="employeeID">EMP ID: HR-2049</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <span id="employeePhone">+91 98765 43210</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card attendance-card">
+                <div class="card-head">
+                  <h3>Monthly Attendance (10-Day Quick View)</h3>
+                </div>
+                <div class="days-tracker" id="attendanceGrid"></div>
+                <div class="attendance-legend">
+                  <span class="legend-item"><span class="dot present"></span> Present</span>
+                  <span class="legend-item"><span class="dot absent"></span> Absent</span>
+                  <span class="legend-item"><span class="dot half-day"></span> Half Day</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-col col-center">
+              <div class="card quick-access-card">
+                <div class="card-head">
+                  <h3>Quick Access</h3>
+                </div>
+                <div class="quick-access-buttons">
+                  <button class="quick-btn" id="btnQuickProfile">
+                    <div class="btn-icon"><i class="fa-regular fa-id-card"></i></div>
+                    <span>Profile (Edit Info)</span>
+                  </button>
+                  <button class="quick-btn" data-route="employees">
+                    <div class="btn-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <span>Payroll & Directory</span>
+                  </button>
+                  <button class="quick-btn" data-route="attendance">
+                    <div class="btn-icon"><i class="fa-regular fa-clock"></i></div>
+                    <span>Attendance Sheet</span>
+                  </button>
+                  <button class="quick-btn" data-route="leave">
+                    <div class="btn-icon"><i class="fa-regular fa-calendar-xmark"></i></div>
+                    <span>Leave Info</span>
+                  </button>
+                  <button class="quick-btn logout-action" id="btnQuickLogout">
+                    <div class="btn-icon"><i class="fa-solid fa-power-off"></i></div>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-col col-right">
+              <div class="card activity-card">
+                <div class="card-head">
+                  <h3>Recent Activity</h3>
+                  <button class="text-btn" id="btnAddActivity">+ Add Log</button>
+                </div>
+                <div class="activity-timeline" id="activityTimeline"></div>
+              </div>
+
+              <div class="card stat-summary-card">
+                <div class="stat-item">
+                  <span class="stat-number" id="totalMonthlyDisbursed">₹3.18L</span>
+                  <span class="stat-label">Total Monthly Payroll</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number" id="payrollAccuracyRate">100%</span>
+                  <span class="stat-label">Payroll Accuracy</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. EMPLOYEES & ADMIN PAYROLL CONTROL VIEW -->
+        <section id="view-employees" class="app-view">
+          <div class="view-header-bar">
+            <div>
+              <h2>Employee Directory & Payroll Control</h2>
+              <p>Click on any employee row to open their full attendance & salary profile.</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn-secondary" id="btnAuditPayroll">
+                <i class="fa-solid fa-shield-halved"></i> Verify Payroll Accuracy
+              </button>
+              <button class="btn-primary" id="btnOpenAddEmp">+ Add New Employee</button>
+            </div>
+          </div>
+
+          <!-- Summary Strip for Payroll Control -->
+          <div class="payroll-stats-strip">
+            <div class="payroll-stat-card">
+              <span class="stat-title">Total Active Payroll</span>
+              <h3 id="statTotalPayroll">₹3,18,000 / mo</h3>
+            </div>
+            <div class="payroll-stat-card">
+              <span class="stat-title">Total Deductions (PF/Tax)</span>
+              <h3 id="statTotalDeductions">₹42,000 / mo</h3>
+            </div>
+            <div class="payroll-stat-card">
+              <span class="stat-title">Net Disbursable</span>
+              <h3 id="statTotalNet">₹2,76,000 / mo</h3>
+            </div>
+            <div class="payroll-stat-card">
+              <span class="stat-title">Audit Accuracy Status</span>
+              <h3 style="color:var(--success-color);" id="auditStatusBadge"><i class="fa-solid fa-circle-check"></i> 100% Verified</h3>
+            </div>
+          </div>
+
+          <div class="card table-card">
+            <table class="data-table interactive-table">
+              <thead>
+                <tr>
+                  <th>Employee Info</th>
+                  <th>Department & Role</th>
+                  <th>Base Pay (₹)</th>
+                  <th>Allowances (₹)</th>
+                  <th>Deductions (₹)</th>
+                  <th>Net Salary (₹)</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="employeesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3. ATTENDANCE VIEW -->
+        <section id="view-attendance" class="app-view">
+          <div class="view-header-bar">
+            <div>
+              <h2>Monthly Attendance Sheet</h2>
+              <p>Full team attendance record logs and daily status check.</p>
+            </div>
+            <button class="btn-secondary" id="btnMarkAllPresent">Mark All Present</button>
+          </div>
+          <div class="card table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Department</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceSheetBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. DOCUMENTS VIEW -->
+        <section id="view-documents" class="app-view">
+          <div class="view-header-bar">
+            <div>
+              <h2>Document Management</h2>
+              <p>Company policies, payroll slips, and official documents.</p>
+            </div>
+            <button class="btn-primary" id="btnUploadDoc">+ Upload Document</button>
+          </div>
+          <div class="documents-grid" id="documentsContainer"></div>
+        </section>
+
+        <!-- 5. LEAVE VIEW -->
+        <section id="view-leave" class="app-view">
+          <div class="view-header-bar">
+            <div>
+              <h2>Leave Requests & Quotas</h2>
+              <p>Review leave applications and manage approvals.</p>
+            </div>
+            <button class="btn-primary" id="btnApplyLeaveModal">Apply for Leave</button>
+          </div>
+          <div class="card table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Type</th>
+                  <th>From</th>
+                  <th>To</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leaveTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. HELP DESK VIEW -->
+        <section id="view-help" class="app-view">
+          <div class="view-header-bar">
+            <div>
+              <h2>HR Help Desk & Support</h2>
+              <p>Submit query tickets and resolve internal staff issues.</p>
+            </div>
+            <button class="btn-primary" id="btnOpenTicketModal">+ New Ticket</button>
+          </div>
+          <div class="help-grid">
+            <div class="card">
+              <div class="card-head"><h3>Active Support Tickets</h3></div>
+              <div class="tickets-list" id="ticketsContainer"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>Frequently Asked Questions</h3></div>
+              <div class="faq-accordion">
+                <details class="faq-item">
+                  <summary>How is monthly leave balance calculated?</summary>
+                  <p>Paid leaves are credited on the 1st of every month (1.75 leaves/month).</p>
+                </details>
+                <details class="faq-item">
+                  <summary>What is the payroll cutoff date?</summary>
+                  <p>Attendance is locked on the 26th of each month for payroll processing.</p>
+                </details>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. SETTINGS VIEW -->
+        <section id="view-settings" class="app-view">
+          <div class="view-header-bar">
+            <div>
+              <h2>System Settings</h2>
+              <p>Manage system notifications, portal parameters, and themes.</p>
+            </div>
+          </div>
+          <div class="card">
+            <p style="color:var(--text-muted);">All system preferences and access controls are actively running.</p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal-box">
+      <div class="modal-icon text-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3>Confirm Logout</h3>
+      <p style="color:var(--text-muted); margin: 8px 0 16px;">Are you sure you want to sign out of the HRMS portal?</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btnCancelLogout">Cancel</button>
+        <button class="btn-danger" id="btnConfirmLogout">Yes, Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERIC DYNAMIC MODAL (For Profile, Add Emp, Salary Edit, Leave, Tickets) -->
+  <div class="modal-overlay" id="genericModal">
+    <div class="modal-box" id="genericModalContainer">
+      <div class="modal-head">
+        <h3 id="modalTitle">Modal Form</h3>
+        <button class="modal-close" id="btnModalClose">&times;</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
