@@ -41,7 +41,7 @@ const Login = () => {
         // Retrieve the role we saved during Sign Up
         const userRole = data.user?.user_metadata?.role || 'Employee';
         alert(`Logged in successfully! Redirecting to ${userRole === 'HR' ? 'HR' : 'Employee'} Dashboard...`);
-        // window.location.href = userRole === 'HR' ? '/admin-dashboard' : '/employee-dashboard';
+        window.location.href = userRole === 'HR' ? '/HR/index.html' : '/Emp/suraj.html';
       }
       
     } else {
